@@ -1,0 +1,13 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <com.example.yourpackage.BubbleWrapView android:id="@+id/bubbleWrapBubblePopper"
+        android:layout_width="match_parent" android:layout_height="300dp" android:layout_gravity="center"
+        app:numRows="12" app:numCols="8" />
+
+    <!-- Add other UI elements for the screen that hosts the game -->
+    <Button android:id="@+id/resetButton" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal" android:layout_marginBottom="20dp"
+        android:text="Reset Game" />
+
+</FrameLayout>
