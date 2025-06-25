@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
-import com.example.wakemeup.gameFragments.BaseGameFragment;
+import com.example.wakemeup.games.common.BaseGameFragment;
 
 public class GameHostActivity extends AppCompatActivity implements BaseGameFragment.GameCompleteListener {
 
@@ -14,7 +14,6 @@ public class GameHostActivity extends AppCompatActivity implements BaseGameFragm
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_host);
-
         loadNextGame();
     }
 

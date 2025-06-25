@@ -2,8 +2,8 @@ package com.example.wakemeup;
 
 import androidx.fragment.app.Fragment;
 
-import com.example.wakemeup.gameFragments.BaseGameFragment;
-import com.example.wakemeup.gameFragments.BubblePopperFragment;
+import com.example.wakemeup.games.common.BaseGameFragment;
+import com.example.wakemeup.games.bubblepopper.BubblePopperFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +24,14 @@ public class GameManager {
             instance = new GameManager();
         }
         return instance;
+    }
+
+    public void setupNewGameSession() {
+        gameQueue.clear(); // Clear any old games from a previous session
+
+        // Add the minigames for this new session
+        gameQueue.add(BubblePopperFragment.class);
+        // gameQueue.add(new AnotherGameFragment()); // Add more games here
     }
 
     public Fragment getNextGameFragment() {

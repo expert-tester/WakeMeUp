@@ -1,4 +1,4 @@
-package com.example.wakemeup.gameFragments;
+package com.example.wakemeup.games.common;
 
 import android.os.Bundle;
 import android.view.View;
