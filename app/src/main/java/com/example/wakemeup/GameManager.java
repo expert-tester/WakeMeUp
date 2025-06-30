@@ -4,6 +4,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.wakemeup.games.common.BaseGameFragment;
 import com.example.wakemeup.games.bubblepopper.BubblePopperFragment;
+import com.example.wakemeup.games.shaker.ShakerFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,7 @@ public class GameManager {
     private GameManager() {
         gameQueue = new ArrayList<>();
         // Add your game fragments here
-        gameQueue.add(BubblePopperFragment.class);
+        gameQueue.add(ShakerFragment.class);
     }
 
     public static GameManager getInstance() {
@@ -30,7 +31,7 @@ public class GameManager {
         gameQueue.clear(); // Clear any old games from a previous session
 
         // Add the minigames for this new session
-        gameQueue.add(BubblePopperFragment.class);
+        gameQueue.add(ShakerFragment.class);
         // gameQueue.add(new AnotherGameFragment()); // Add more games here
     }
 
