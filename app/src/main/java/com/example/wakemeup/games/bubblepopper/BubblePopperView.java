@@ -22,8 +22,8 @@ public class BubblePopperView extends View {
     private Paint titlePaint, subtitlePaint;
     private Paint bubblePaint;
 
-    public BubblePopperView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    public BubblePopperView(Context context) {
+        super(context);
 
         titlePaint = new Paint();
         titlePaint.setColor(Color.WHITE);

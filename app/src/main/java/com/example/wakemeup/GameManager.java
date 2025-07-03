@@ -31,8 +31,8 @@ public class GameManager {
         gameQueue.clear(); // Clear any old games from a previous session
 
         // Add the minigames for this new session
+        gameQueue.add(BubblePopperFragment.class);
         gameQueue.add(ShakerFragment.class);
-        // gameQueue.add(new AnotherGameFragment()); // Add more games here
     }
 
     public Fragment getNextGameFragment() {

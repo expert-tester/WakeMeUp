@@ -14,8 +14,7 @@ public class BubblePopperFragment extends BaseGameFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Context context = getContext();
-        BubblePopperView bubblePopperView = new BubblePopperView(context, null);
+        BubblePopperView bubblePopperView = new BubblePopperView(requireContext());
 
         bubblePopperView.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,

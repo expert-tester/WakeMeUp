@@ -25,10 +25,9 @@ public class ShakerFragment extends BaseGameFragment implements SensorEventListe
     private Sensor accelerometer;
 
     private float acceleration = 0f;
-    private float currentAcceleration = 0f;
-    private float lastAcceleration = 0f;
+    private float lastY = 0f;
 
-    private final int SHAKE_THRESHOLD = 12;
+    private final int SHAKE_THRESHOLD = 5;
     private final int SHAKES_TO_WIN = 15;
     private int shakeCount = 0;
 
@@ -49,17 +48,21 @@ public class ShakerFragment extends BaseGameFragment implements SensorEventListe
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        float x = event.values[0];
-        float y = event.values[1];
-        float z = event.values[2];
-        lastAcceleration = currentAcceleration;
-        currentAcceleration = (float) Math.sqrt((double) (x*x + y*y + z*z));
-        float delta = currentAcceleration - lastAcceleration;
-        acceleration = acceleration * 0.9f + delta;
+        float currentY = event.values[1];
+
+        if (lastY == 0f) {
+            lastY = currentY;
+            return;
+        }
+
+        float deltaY = currentY - lastY;
+
+        acceleration = acceleration * 0.9f + deltaY;
 
         // shakey shakey
         if (acceleration > SHAKE_THRESHOLD) {
             Toast.makeText(getContext(), "Shake detected", Toast.LENGTH_SHORT).show();
+            System.out.println(acceleration);
             shakeCount++;
             updateShakesRemainingText();
 
@@ -67,6 +70,7 @@ public class ShakerFragment extends BaseGameFragment implements SensorEventListe
                 completeGame();
             }
         }
+        lastY = currentY;
     }
 
     private void updateShakesRemainingText() {
