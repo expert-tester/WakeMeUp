@@ -1,4 +1,4 @@
-package com.example.wakemeup;
+package com.example.wakemeup.games;
 
 import android.os.Bundle;
 
@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.example.wakemeup.R;
 import com.example.wakemeup.games.common.BaseGameFragment;
 
 public class GameHostActivity extends AppCompatActivity implements BaseGameFragment.GameCompleteListener {

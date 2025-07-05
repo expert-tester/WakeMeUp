@@ -1,11 +1,12 @@
-package com.example.wakemeup;
+package com.example.wakemeup.stopwatch;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+
+import com.example.wakemeup.R;
 
 import java.util.*;
 

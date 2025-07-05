@@ -1,4 +1,4 @@
-package com.example.timer1;
+package com.example.wakemeup.timer1;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -8,6 +8,8 @@ import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.wakemeup.R;
 
 public class timer extends AppCompatActivity {
 
