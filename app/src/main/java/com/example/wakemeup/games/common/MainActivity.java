@@ -1,4 +1,4 @@
-package com.example.wakemeup.games;
+package com.example.wakemeup.games.common;
 
 import android.os.Bundle;
 
