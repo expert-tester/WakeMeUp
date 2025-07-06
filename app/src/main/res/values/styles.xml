@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CustomTimePickerTheme" parent="Theme.MaterialComponents.Light">
+        <item name="android:textColorPrimary">#888888</item> <!-- Grey -->
+        <item name="android:typeface">sans</item>
+    </style>
+</resources>
