@@ -1,4 +1,4 @@
-package com.example.wakemeup;
+package com.example.wakemeup.games;
 
 import androidx.fragment.app.Fragment;
 

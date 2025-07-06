@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#000000"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="#000000"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/alarmTimeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3:00 PM"
+            android:textColor="#888888"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/alarmLabelText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Meeting"
+            android:textColor="#888888"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/alarmRepeatText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Repeat on Mon, Wed"
+            android:textColor="#888888"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="48dp"
+        android:minHeight="48dp"
+        android:padding="4dp">
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/alarmSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:thumbTint="@color/switch_thumb_color"
+            app:trackTint="@color/switch_track_color" />
+
+    </FrameLayout>
+</LinearLayout>

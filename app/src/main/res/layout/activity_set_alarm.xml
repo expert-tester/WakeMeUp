@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#040404">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Top bar: Cancel | Add Alarm | Save -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/cancelBtn"
+            style="@android:style/Widget.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:backgroundTint="@android:color/transparent"
+            android:stateListAnimator="@null"
+            android:text="Cancel"
+            android:textColor="#FF9800"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Add Alarm"
+            android:textColor="#F4EEEE"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/saveAlarmBtn"
+            style="@android:style/Widget.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:backgroundTint="@android:color/transparent"
+            android:stateListAnimator="@null"
+            android:text="Save"
+            android:textColor="#FF9800"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- Time Picker -->
+
+    <TimePicker
+        android:id="@+id/timePicker"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:theme="@style/CustomTimePickerTheme"
+        android:timePickerMode="spinner" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:minHeight="48dp">
+
+        <EditText
+            android:id="@+id/labelInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Label"
+            android:inputType="text"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888" />
+    </FrameLayout>
+
+    <!-- Repeat Row -->
+    <LinearLayout
+        android:id="@+id/repeatLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingVertical="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Repeat"
+            android:textColor="#F2EDED"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/repeatValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Never"
+            android:textColor="#888888" />
+    </LinearLayout>
+
+    <!-- Sound Row -->
+    <LinearLayout
+        android:id="@+id/soundRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingVertical="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Sound"
+            android:textColor="#F8F5F5"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/soundNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Default"
+            android:textColor="#888888" />
+    </LinearLayout>
+
+    <!--        <LinearLayout-->
+    <!--            android:id="@+id/soundRow"-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:orientation="horizontal"-->
+    <!--            android:padding="16dp"-->
+    <!--            android:clickable="true"-->
+    <!--            android:focusable="true"-->
+    <!--            android:background="?android:attr/selectableItemBackground">-->
+
+    <!--            <TextView-->
+    <!--                android:text="Sound"-->
+    <!--                android:textSize="16sp"-->
+    <!--                android:layout_width="0dp"-->
+    <!--                android:layout_weight="1"-->
+    <!--                android:layout_height="wrap_content" />-->
+
+    <!--            <TextView-->
+    <!--                android:id="@+id/soundNameText"-->
+    <!--                android:layout_width="99dp"-->
+    <!--                android:layout_height="wrap_content"-->
+    <!--                android:text="Default"-->
+    <!--                android:textColor="@android:color/darker_gray"-->
+    <!--                android:textSize="18sp" />-->
+    <!--        </LinearLayout>-->
+
+    <!-- Snooze Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="48dp"
+        android:orientation="horizontal"
+        android:paddingVertical="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Snooze"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/snoozeSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:thumbTint="@color/switch_thumb_color"
+            app:trackTint="@color/switch_track_color" />
+    </LinearLayout>
+
+    <!-- Game Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="48dp"
+        android:orientation="horizontal"
+        android:paddingVertical="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Game"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/gameSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:thumbTint="@color/switch_thumb_color"
+            app:trackTint="@color/switch_track_color" />
+    </LinearLayout>
+
+</LinearLayout>
+    </ScrollView>
