@@ -161,6 +161,7 @@ public class AlarmFragment extends Fragment{
                             recentlyDeletedAlarm.isEnabled(),
                             recentlyDeletedAlarm.getLabel(),
                             recentlyDeletedAlarm.getRepeat(),
+                            recentlyDeletedAlarm.isSnoozeEnabled(),
                             recentlyDeletedAlarm.isGameEnabled()
                     );
 

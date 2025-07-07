@@ -20,34 +20,12 @@
         android:theme="@style/Theme.WakeMeUp"
         tools:targetApi="31">
         <activity
-            android:name=".location.LocationTracker"
-            android:exported="false" />
-        <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.Light">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".alarm.SetAlarmActivity"
-            android:exported="true" />
-        <activity
-            android:name=".alarm.AlarmRingActivity"
-            android:exported="true"
-            android:showWhenLocked="true"
-            android:turnScreenOn="true" />
-        <activity
-            android:name=".alarm.AlarmFragment"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 

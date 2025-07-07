@@ -4,13 +4,18 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Looper;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -21,7 +26,7 @@ import com.google.android.gms.location.Priority;
 
 import com.example.wakemeup.R;
 
-public class LocationTracker extends AppCompatActivity {
+public class LocationTracker extends Fragment {
 
     private static final int PERMISSION_REQUEST_CODE = 1001;
     private static final double TARGET_DISTANCE_METERS = 20.0;
@@ -37,17 +42,22 @@ public class LocationTracker extends AppCompatActivity {
     private double totalDistanceMoved = 0.0;
     private boolean isTracking = false;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_location);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.activity_location, container, false);
+    }
 
-        tvDistanceMoved = findViewById(R.id.tvDistanceMoved);
-        tvStatus = findViewById(R.id.tvStatus);
-        tvTargetDistance = findViewById(R.id.tvTargetDistance);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        tvDistanceMoved = view.findViewById(R.id.tvDistanceMoved);
+        tvStatus = view.findViewById(R.id.tvStatus);
+        tvTargetDistance = view.findViewById(R.id.tvTargetDistance);
         tvTargetDistance.setText(String.format("%.1f m", TARGET_DISTANCE_METERS));
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
         locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
                 .setMinUpdateIntervalMillis(300)
@@ -69,11 +79,11 @@ public class LocationTracker extends AppCompatActivity {
     }
 
     private void checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             startLocationUpdates();
         } else {
-            ActivityCompat.requestPermissions(this,
+            ActivityCompat.requestPermissions(requireActivity(),
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSION_REQUEST_CODE);
         }
@@ -89,7 +99,7 @@ public class LocationTracker extends AppCompatActivity {
         updateDistanceUI(0.0);
         updateStatusUI("Status: Tracking started...");
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
         }
@@ -150,7 +160,7 @@ public class LocationTracker extends AppCompatActivity {
 
         if (totalDistanceMoved >= TARGET_DISTANCE_METERS) {
             updateStatusUI("Status: Target reached!");
-            Toast.makeText(this, "🎉 Target distance of " + TARGET_DISTANCE_METERS + "m reached! 🎉", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), "🎉 Target distance of " + TARGET_DISTANCE_METERS + "m reached! 🎉", Toast.LENGTH_LONG).show();
             stopLocationUpdates();
         }
     }
@@ -164,7 +174,7 @@ public class LocationTracker extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         super.onDestroy();
         stopLocationUpdates();
     }
@@ -178,7 +188,7 @@ public class LocationTracker extends AppCompatActivity {
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startLocationUpdates();
             } else {
-                Toast.makeText(this, "Location permission denied.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Location permission denied.", Toast.LENGTH_SHORT).show();
                 updateStatusUI("Status: Permission denied.");
             }
         }
