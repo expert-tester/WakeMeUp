@@ -2,9 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.wakemeup">
+
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
         android:allowBackup="true"
@@ -16,17 +19,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WakeMeUp"
         tools:targetApi="31">
-
+        <activity
+            android:name=".location.Location"
+            android:exported="false" />
         <activity
             android:name=".alarm.SetAlarmActivity"
-            android:exported="true"/>
-
+            android:exported="true" />
         <activity
             android:name=".alarm.AlarmRingActivity"
+            android:exported="true"
             android:showWhenLocked="true"
-            android:turnScreenOn="true"
-            android:exported="true"/>
-
+            android:turnScreenOn="true" />
         <activity
             android:name=".alarm.MainPageActivity"
             android:exported="true">
@@ -34,15 +37,12 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-
             </intent-filter>
         </activity>
 
         <receiver
-            android:name="com.example.wakemeup.alarm.AlarmReceiver"
+            android:name=".alarm.AlarmReceiver"
             android:exported="true" />
-
-
     </application>
 
 </manifest>
