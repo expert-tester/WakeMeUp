@@ -38,12 +38,15 @@ public class SetAlarmActivity extends AppCompatActivity {
     private Button saveBtn, cancelBtn;
     private EditText labelInput;
     private SwitchCompat snoozeSwitch, gameSwitch;
-    private TextView repeatValue;
+    private TextView repeatValue, alarmTitleText;
     private String selectedRepeat = "Never";
+    private int alarmId = -1;  // -1 means it's a new alarm
+    private boolean isEditMode = false;
 
 
 
-    @SuppressLint("ScheduleExactAlarm")
+
+    @SuppressLint({"ScheduleExactAlarm", "MissingInflatedId"})
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +61,38 @@ public class SetAlarmActivity extends AppCompatActivity {
         snoozeSwitch = findViewById(R.id.snoozeSwitch);
         gameSwitch = findViewById(R.id.gameSwitch);
         repeatValue = findViewById(R.id.repeatValue);
+        alarmTitleText = findViewById(R.id.alarmTitleText);
+
+        AlarmDBHelper dbHelper = new AlarmDBHelper(this); // move it here so it can be reused
+
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("alarmId")) {
+            alarmId = intent.getIntExtra("alarmId", -1);
+            isEditMode = true;
+
+            if (alarmId != -1) {
+                Alarm existingAlarm = dbHelper.getAlarmById(alarmId);
+                if (existingAlarm != null) {
+                    timePicker.setHour(existingAlarm.getHour());
+                    timePicker.setMinute(existingAlarm.getMinute());
+                    labelInput.setText(existingAlarm.getLabel());
+
+                    selectedRepeat = existingAlarm.getRepeat();
+                    repeatValue.setText(
+                            selectedRepeat.equals("Never") ? "Never" : "Repeat on " + selectedRepeat
+                    );
+
+                    snoozeSwitch.setChecked(existingAlarm.isSnoozeEnabled());
+                    gameSwitch.setChecked(existingAlarm.isGameEnabled());
+
+
+                    TextView title = findViewById(R.id.alarmTitleText);
+                    if (title != null) {
+                        title.setText("Edit Alarm");
+                    }
+                }
+            }
+        }
 
         // cancel add alarm
         cancelBtn.setOnClickListener(v -> finish());
@@ -147,7 +182,6 @@ public class SetAlarmActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
                 if (!alarmManager.canScheduleExactAlarms()) {
-                    Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
                     intent.setData(Uri.parse("package:" + getPackageName()));
                     startActivity(intent);
                     return;
@@ -157,8 +191,6 @@ public class SetAlarmActivity extends AppCompatActivity {
             String amPm = (hour >= 12) ? "PM" : "AM";
             int displayHour = (hour % 12 == 0) ? 12 : hour % 12;
             String alarmTime = String.format("%02d:%02d %s", displayHour, minute, amPm);
-
-            AlarmDBHelper dbHelper = new AlarmDBHelper(this);
 
             int alarmId = getIntent().getIntExtra("alarmId", -1); // 👈 check if we're editing
 
@@ -188,7 +220,6 @@ public class SetAlarmActivity extends AppCompatActivity {
 
             if (id != -1) {
                 AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-                Intent intent = new Intent(this, AlarmReceiver.class);
                 intent.putExtra("alarmId", (int) id);
 
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(
@@ -244,8 +275,9 @@ public class SetAlarmActivity extends AppCompatActivity {
 
         repeatLayout.setOnClickListener(v -> {
             ArrayList<String> selectedDays = new ArrayList<>();
-            String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-            boolean[] checkedDays = new boolean[7];
+            String[] days = {"Never", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+            boolean[] checkedDays = new boolean[8];
+
 
             AlertDialog.Builder builder = new AlertDialog.Builder(SetAlarmActivity.this);
             builder.setTitle("Select Repeat Days");
@@ -288,7 +320,6 @@ public class SetAlarmActivity extends AppCompatActivity {
                 if (getIntent().hasExtra("alarmId")) {
                     int existingId = getIntent().getIntExtra("alarmId", -1);
                     if (existingId != -1) {
-                        AlarmDBHelper dbHelper = new AlarmDBHelper(SetAlarmActivity.this);
                         dbHelper.updateRepeat(existingId, selectedRepeat);
                     }
                 }

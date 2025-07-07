@@ -79,10 +79,16 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
         });
 
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, SetAlarmActivity.class);
-            intent.putExtra("alarmId", currentAlarm.getId());  // ✅ pass alarm ID
-            ((Activity) context).startActivityForResult(intent, 1); // or REQUEST_CODE_EDIT if you define it
+            if (listener != null) {
+                listener.onItemClick(alarmList.get(position));
+            }
         });
+
+//        holder.itemView.setOnClickListener(v -> {
+//            Intent intent = new Intent(context, SetAlarmActivity.class);
+//            intent.putExtra("alarmId", currentAlarm.getId());  // ✅ pass alarm ID
+//            ((Activity) context).startActivityForResult(intent, 1); // or REQUEST_CODE_EDIT if you define it
+//        });
     }
 
     @Override
@@ -114,4 +120,14 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
         }
 
     }
+    public interface OnItemClickListener {
+        void onItemClick(Alarm alarm);
+    }
+
+    private OnItemClickListener listener;
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
+
 }

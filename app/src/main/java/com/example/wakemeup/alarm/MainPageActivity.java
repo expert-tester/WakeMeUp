@@ -57,6 +57,20 @@ public class MainPageActivity extends AppCompatActivity {
         alarmRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         alarmRecyclerView.setAdapter(adapter);
 
+        adapter.setOnItemClickListener(alarm -> {
+            Intent intent = new Intent(MainPageActivity.this, SetAlarmActivity.class);
+            intent.putExtra("alarmId", alarm.getId());
+            intent.putExtra("hour", alarm.getHour());
+            intent.putExtra("minute", alarm.getMinute());
+            intent.putExtra("label", alarm.getLabel());
+            intent.putExtra("repeat", alarm.getRepeat());
+            intent.putExtra("snooze", alarm.isSnoozeEnabled());
+            intent.putExtra("game", alarm.isGameEnabled());
+            intent.putExtra("editMode", true); // Flag to tell SetAlarmActivity to edit
+            startActivityForResult(intent, REQUEST_CODE_ADD); // reuse same request code
+        });
+
+
         // Attach swipe handler
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeCallback);
         itemTouchHelper.attachToRecyclerView(alarmRecyclerView);
