@@ -14,7 +14,7 @@ public class Alarm {
 
 
 
-    public Alarm(int id, String time, boolean isEnabled, int hour, int minute, String label, String soundUri, boolean gameEnabled) {
+    public Alarm(int id, String time, boolean isEnabled, int hour, int minute, String label, String soundUri, String repeat,boolean gameEnabled) {
         this.id = id;
         this.time = time;
         this.isEnabled = isEnabled;
@@ -24,9 +24,7 @@ public class Alarm {
         this.gameEnabled = gameEnabled;
     }
 
-    public Alarm() {
 
-    }
 
     public int getId() {
         return id;

@@ -16,93 +16,199 @@ import java.util.Locale;
 import java.util.Map;
 
 public class AlarmReceiver extends BroadcastReceiver {
-    @SuppressLint("ScheduleExactAlarm")
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("AlarmReceiver", "Alarm triggered!");
+        int alarmId = intent.getIntExtra("alarmId", -1);
+        if (alarmId == -1) return;
 
-        try {
-            Log.d("AlarmReceiver", "Alarm triggered!");
-            int alarmId = intent.getIntExtra("alarmId", -1);
-            if (alarmId == -1) return;
+        AlarmDBHelper dbHelper = new AlarmDBHelper(context);
+        Alarm alarm = dbHelper.getAlarmById(alarmId);
 
-            AlarmDBHelper dbHelper = new AlarmDBHelper(context);
-            Alarm alarm = dbHelper.getAlarmById(alarmId);
-            if (alarm == null || !alarm.isEnabled()) return;
-
+        if (alarm != null && alarm.isEnabled()) {
             String repeat = alarm.getRepeat();
-            if (repeat != null && !repeat.equalsIgnoreCase("Never")) {
-                String[] days = repeat.split(",");
-                Calendar calendar = Calendar.getInstance();
-                String today = new SimpleDateFormat("EEE", Locale.ENGLISH).format(calendar.getTime());
 
-                boolean match = false;
-                for (String d : days) {
-                    if (today.equalsIgnoreCase(d.trim())) {
-                        match = true;
-                        break;
+            // Check if today matches any selected repeat day
+            if (repeat != null && !repeat.equals("Never")) {
+                Calendar now = Calendar.getInstance();
+                String today = getDayName(now.get(Calendar.DAY_OF_WEEK));
+
+                if (!repeat.contains(today)) {
+                    // Do not ring today
+                    Calendar nextTime = getNextRepeatTime(repeat, alarm.getHour(), alarm.getMinute());
+                    if (nextTime != null) {
+                        rescheduleAlarm(context, alarmId, nextTime);
                     }
+                    return;
                 }
-                if (!match) return;
             }
 
+            // ✅ Today is a valid repeat day, so ring the alarm
             Intent ringIntent = new Intent(context, AlarmRingActivity.class);
+            ringIntent.putExtra("alarmId", alarmId);
             ringIntent.putExtra("label", alarm.getLabel());
             ringIntent.putExtra("time", alarm.getTime());
-            ringIntent.putExtra("alarmId", alarm.getId());
-            ringIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            ringIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(ringIntent);
 
-            if (repeat != null && !repeat.equalsIgnoreCase("Never")) {
-                String[] days = repeat.split(",");
-                Calendar nextAlarm = Calendar.getInstance();
-                int currentDay = nextAlarm.get(Calendar.DAY_OF_WEEK);
-
-                Map<String, Integer> dayMap = new HashMap<>();
-                dayMap.put("Sun", Calendar.SUNDAY);
-                dayMap.put("Mon", Calendar.MONDAY);
-                dayMap.put("Tue", Calendar.TUESDAY);
-                dayMap.put("Wed", Calendar.WEDNESDAY);
-                dayMap.put("Thu", Calendar.THURSDAY);
-                dayMap.put("Fri", Calendar.FRIDAY);
-                dayMap.put("Sat", Calendar.SATURDAY);
-
-                int minDaysUntilNext = 8;
-                for (String d : days) {
-                    Integer dayOfWeek = dayMap.get(d.trim());
-                    if (dayOfWeek != null) {
-                        int daysUntil = (dayOfWeek + 7 - currentDay) % 7;
-                        if (daysUntil == 0) daysUntil = 7;
-                        minDaysUntilNext = Math.min(minDaysUntilNext, daysUntil);
-                    }
+            // 🔁 Schedule next repeat
+            if (repeat != null && !repeat.equals("Never")) {
+                Calendar nextTime = getNextRepeatTime(repeat, alarm.getHour(), alarm.getMinute());
+                if (nextTime != null) {
+                    rescheduleAlarm(context, alarmId, nextTime);
                 }
-
-                nextAlarm.add(Calendar.DAY_OF_YEAR, minDaysUntilNext);
-                nextAlarm.set(Calendar.HOUR_OF_DAY, alarm.getHour());
-                nextAlarm.set(Calendar.MINUTE, alarm.getMinute());
-                nextAlarm.set(Calendar.SECOND, 0);
-                nextAlarm.set(Calendar.MILLISECOND, 0);
-
-                Intent rescheduleIntent = new Intent(context, AlarmReceiver.class);
-                rescheduleIntent.putExtra("alarmId", alarm.getId());
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                        context, alarm.getId(), rescheduleIntent, PendingIntent.FLAG_IMMUTABLE
-                );
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-                    alarmManager.setExactAndAllowWhileIdle(
-                            AlarmManager.RTC_WAKEUP,
-                            nextAlarm.getTimeInMillis(),
-                            pendingIntent
-                    );
-                }
-
-                Log.d("AlarmReceiver", "Alarm rescheduled for " + nextAlarm.getTime());
             }
-
-        } catch (Exception e) {
-            Log.e("AlarmReceiver", "Exception in onReceive: " + e.getMessage(), e);
         }
     }
+    private String getDayName(int dayOfWeek) {
+        switch (dayOfWeek) {
+            case Calendar.SUNDAY: return "Sunday";
+            case Calendar.MONDAY: return "Monday";
+            case Calendar.TUESDAY: return "Tuesday";
+            case Calendar.WEDNESDAY: return "Wednesday";
+            case Calendar.THURSDAY: return "Thursday";
+            case Calendar.FRIDAY: return "Friday";
+            case Calendar.SATURDAY: return "Saturday";
+            default: return "";
+        }
+    }
+    private Calendar getNextRepeatTime(String repeat, int hour, int minute) {
+        String[] daysOfWeek = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+        boolean[] repeatDays = new boolean[7];
+
+        for (int i = 0; i < daysOfWeek.length; i++) {
+            if (repeat.contains(daysOfWeek[i])) {
+                repeatDays[i] = true;
+            }
+        }
+
+        Calendar now = Calendar.getInstance();
+        now.set(Calendar.HOUR_OF_DAY, hour);
+        now.set(Calendar.MINUTE, minute);
+        now.set(Calendar.SECOND, 0);
+        now.set(Calendar.MILLISECOND, 0);
+
+        int today = now.get(Calendar.DAY_OF_WEEK) - 1; // Sunday = 0
+
+        for (int i = 1; i <= 7; i++) {
+            int nextDay = (today + i) % 7;
+            if (repeatDays[nextDay]) {
+                Calendar next = (Calendar) now.clone();
+                next.add(Calendar.DAY_OF_YEAR, i);
+                return next;
+            }
+        }
+
+        return null;
+    }
+    @SuppressLint("ScheduleExactAlarm")
+    private void rescheduleAlarm(Context context, int alarmId, Calendar nextTime) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent newIntent = new Intent(context, AlarmReceiver.class);
+        newIntent.putExtra("alarmId", alarmId);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context,
+                alarmId,
+                newIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                nextTime.getTimeInMillis(),
+                pendingIntent
+        );
+    }
+
 }
+
+//    @SuppressLint("ScheduleExactAlarm")
+//    @Override
+//    public void onReceive(Context context, Intent intent) {
+//        Log.d("AlarmReceiver", "Alarm triggered!");
+//
+//        try {
+//            Log.d("AlarmReceiver", "Alarm triggered!");
+//            int alarmId = intent.getIntExtra("alarmId", -1);
+//            if (alarmId == -1) return;
+//
+//            AlarmDBHelper dbHelper = new AlarmDBHelper(context);
+//            Alarm alarm = dbHelper.getAlarmById(alarmId);
+//            if (alarm == null || !alarm.isEnabled()) return;
+//
+//            String repeat = alarm.getRepeat();
+//            if (repeat != null && !repeat.equalsIgnoreCase("Never")) {
+//                String[] days = repeat.split(",");
+//                Calendar calendar = Calendar.getInstance();
+//                String today = new SimpleDateFormat("EEE", Locale.ENGLISH).format(calendar.getTime());
+//
+//                boolean match = false;
+//                for (String d : days) {
+//                    if (today.equalsIgnoreCase(d.trim())) {
+//                        match = true;
+//                        break;
+//                    }
+//                }
+//                if (!match) return;
+//            }
+//
+//            Intent ringIntent = new Intent(context, AlarmRingActivity.class);
+//            ringIntent.putExtra("label", alarm.getLabel());
+//            ringIntent.putExtra("time", alarm.getTime());
+//            ringIntent.putExtra("alarmId", alarm.getId());
+//            ringIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            context.startActivity(ringIntent);
+//
+//            if (repeat != null && !repeat.equalsIgnoreCase("Never")) {
+//                String[] days = repeat.split(",");
+//                Calendar nextAlarm = Calendar.getInstance();
+//                int currentDay = nextAlarm.get(Calendar.DAY_OF_WEEK);
+//
+//                Map<String, Integer> dayMap = new HashMap<>();
+//                dayMap.put("Sun", Calendar.SUNDAY);
+//                dayMap.put("Mon", Calendar.MONDAY);
+//                dayMap.put("Tue", Calendar.TUESDAY);
+//                dayMap.put("Wed", Calendar.WEDNESDAY);
+//                dayMap.put("Thu", Calendar.THURSDAY);
+//                dayMap.put("Fri", Calendar.FRIDAY);
+//                dayMap.put("Sat", Calendar.SATURDAY);
+//
+//                int minDaysUntilNext = 8;
+//                for (String d : days) {
+//                    Integer dayOfWeek = dayMap.get(d.trim());
+//                    if (dayOfWeek != null) {
+//                        int daysUntil = (dayOfWeek + 7 - currentDay) % 7;
+//                        if (daysUntil == 0) daysUntil = 7;
+//                        minDaysUntilNext = Math.min(minDaysUntilNext, daysUntil);
+//                    }
+//                }
+//
+//                nextAlarm.add(Calendar.DAY_OF_YEAR, minDaysUntilNext);
+//                nextAlarm.set(Calendar.HOUR_OF_DAY, alarm.getHour());
+//                nextAlarm.set(Calendar.MINUTE, alarm.getMinute());
+//                nextAlarm.set(Calendar.SECOND, 0);
+//                nextAlarm.set(Calendar.MILLISECOND, 0);
+//
+//                Intent rescheduleIntent = new Intent(context, AlarmReceiver.class);
+//                rescheduleIntent.putExtra("alarmId", alarm.getId());
+//                PendingIntent pendingIntent = PendingIntent.getBroadcast(
+//                        context, alarm.getId(), rescheduleIntent, PendingIntent.FLAG_IMMUTABLE
+//                );
+//
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                    AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+//                    alarmManager.setExactAndAllowWhileIdle(
+//                            AlarmManager.RTC_WAKEUP,
+//                            nextAlarm.getTimeInMillis(),
+//                            pendingIntent
+//                    );
+//                }
+//
+//                Log.d("AlarmReceiver", "Alarm rescheduled for " + nextAlarm.getTime());
+//            }
+//
+//        } catch (Exception e) {
+//            Log.e("AlarmReceiver", "Exception in onReceive: " + e.getMessage(), e);
+//        }
+//    }
+

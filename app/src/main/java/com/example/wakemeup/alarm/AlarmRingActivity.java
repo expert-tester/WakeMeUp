@@ -57,7 +57,13 @@ public class AlarmRingActivity extends Activity {
         } catch (Exception e) {
             Log.e("AlarmRingActivity", "Error playing alarm sound: " + e.getMessage(), e);
         }
+        // Load alarm from database to check if snooze is enabled
+        AlarmDBHelper dbHelper = new AlarmDBHelper(this);
+        Alarm alarm = dbHelper.getAlarmById(alarmId);
 
+        if (alarm != null && !alarm.isSnoozeEnabled()) {
+            snoozeButton.setVisibility(View.GONE); // Hide snooze button when is disabled
+        }
         // Stop alarm on button click
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,9 +77,11 @@ public class AlarmRingActivity extends Activity {
 
         // Snooze alarm for 5 minutes
         snoozeButton.setOnClickListener(v -> {
-            snoozeAlarm(5); // snooze for 5 minutes
-            stopRingtone();
-            finish();
+            if (alarm != null && alarm.isSnoozeEnabled()){
+                snoozeAlarm(5); // snooze for 5 minutes
+                stopRingtone();
+                finish();
+            }
         });
     }
     @SuppressLint("ScheduleExactAlarm")
