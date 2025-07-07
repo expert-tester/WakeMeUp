@@ -2,10 +2,8 @@ package com.example.wakemeup.location;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
-import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,7 +21,7 @@ import com.google.android.gms.location.Priority;
 
 import com.example.wakemeup.R;
 
-public class Location extends AppCompatActivity {
+public class LocationTracker extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1001;
     private static final double TARGET_DISTANCE_METERS = 20.0;

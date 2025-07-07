@@ -20,7 +20,7 @@
         android:theme="@style/Theme.WakeMeUp"
         tools:targetApi="31">
         <activity
-            android:name=".location.Location"
+            android:name=".location.LocationTracker"
             android:exported="false" />
         <activity
             android:name=".alarm.SetAlarmActivity"
