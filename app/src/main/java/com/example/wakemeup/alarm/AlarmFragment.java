@@ -11,12 +11,16 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,9 +32,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
-public class MainPageActivity extends AppCompatActivity {
+public class AlarmFragment extends Fragment{
 
     private static final int REQUEST_CODE_ADD = 1;
     private RecyclerView alarmRecyclerView;
@@ -43,18 +46,30 @@ public class MainPageActivity extends AppCompatActivity {
     private int recentlyDeletedPosition;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_page);
 
-        dbHelper = new AlarmDBHelper(this);
-        alarmRecyclerView = findViewById(R.id.alarmRecyclerView);
-        addBtn = findViewById(R.id.addBtn);
+        dbHelper = new AlarmDBHelper(requireContext());
+        alarmList = new ArrayList<>();
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.alarm, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        alarmRecyclerView = view.findViewById(R.id.alarmRecyclerView);
+        addBtn = view.findViewById(R.id.addBtn);
 
         alarmList = dbHelper.getAllAlarms();
-        adapter = new AlarmAdapter(this, alarmList, dbHelper);
+        adapter = new AlarmAdapter(requireContext(), alarmList, dbHelper);
 
-        alarmRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        alarmRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         alarmRecyclerView.setAdapter(adapter);
 
         // Attach swipe handler
@@ -62,7 +77,7 @@ public class MainPageActivity extends AppCompatActivity {
         itemTouchHelper.attachToRecyclerView(alarmRecyclerView);
 
         addBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(MainPageActivity.this, SetAlarmActivity.class);
+            Intent intent = new Intent(requireContext(), SetAlarmActivity.class);
             startActivityForResult(intent, 1);
         });
     }
@@ -81,10 +96,10 @@ public class MainPageActivity extends AppCompatActivity {
             recentlyDeletedAlarm = adapter.getAlarmAt(recentlyDeletedPosition);
 
             // Cancel system alarm
-            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-            Intent intent = new Intent(MainPageActivity.this, AlarmReceiver.class);
+            AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(requireContext().ALARM_SERVICE);
+            Intent intent = new Intent(requireContext(), AlarmReceiver.class);
             PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                    MainPageActivity.this, recentlyDeletedAlarm.getId(), intent, PendingIntent.FLAG_IMMUTABLE);
+                    requireContext(), recentlyDeletedAlarm.getId(), intent, PendingIntent.FLAG_IMMUTABLE);
             alarmManager.cancel(pendingIntent);
 
             // Remove from DB and UI
@@ -99,7 +114,7 @@ public class MainPageActivity extends AppCompatActivity {
                                 float dX, float dY, int actionState, boolean isCurrentlyActive) {
 
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-            Drawable deleteIcon = ContextCompat.getDrawable(MainPageActivity.this, R.drawable.ic_delete); //
+            Drawable deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete); //
             ColorDrawable background = new ColorDrawable(Color.GRAY);
 
             int itemViewTop = viewHolder.itemView.getTop();
@@ -164,11 +179,11 @@ public class MainPageActivity extends AppCompatActivity {
                             calendar.add(Calendar.DAY_OF_YEAR, 1);
                         }
 
-                        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-                        Intent intent = new Intent(this, AlarmReceiver.class);
+                        AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(requireContext().ALARM_SERVICE);
+                        Intent intent = new Intent(requireContext(), AlarmReceiver.class);
                         intent.putExtra("alarmId", restoredId);
                         PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                                this, (int) restoredId, intent, PendingIntent.FLAG_IMMUTABLE);
+                                requireContext(), (int) restoredId, intent, PendingIntent.FLAG_IMMUTABLE);
 
                         alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
                     }
@@ -177,11 +192,11 @@ public class MainPageActivity extends AppCompatActivity {
 
     @SuppressLint("ScheduleExactAlarm")
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
+        if (requestCode == 1 && resultCode == requireActivity().RESULT_OK) {
             loadAlarms(); // reload from DB
-            Toast.makeText(this, "Alarm added", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Alarm added", Toast.LENGTH_SHORT).show();
         }
             int alarmId = data.getIntExtra("alarmData", -1); // Match SetAlarmActivity key
             int hour = data.getIntExtra("hour", -1);
@@ -200,16 +215,16 @@ public class MainPageActivity extends AppCompatActivity {
                         calendar.add(Calendar.DAY_OF_YEAR, 1);
                     }
 
-                    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-                    Intent intent = new Intent(this, AlarmReceiver.class);
+                    AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(requireContext().ALARM_SERVICE);
+                    Intent intent = new Intent(requireContext(), AlarmReceiver.class);
                     intent.putExtra("alarmId", alarm.getId());
 
                     PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                            this, alarm.getId(), intent, PendingIntent.FLAG_IMMUTABLE);
+                            requireContext(), alarm.getId(), intent, PendingIntent.FLAG_IMMUTABLE);
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         if (!alarmManager.canScheduleExactAlarms()) {
-                            Toast.makeText(this, "Exact alarm permission not granted", Toast.LENGTH_LONG).show();
+                            Toast.makeText(requireContext(), "Exact alarm permission not granted", Toast.LENGTH_LONG).show();
                             return;
                         }
                     }
@@ -246,14 +261,13 @@ public class MainPageActivity extends AppCompatActivity {
 
             adapter.notifyDataSetChanged();
 
-            Toast.makeText(this, "Alarm added", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Alarm added", Toast.LENGTH_SHORT).show();
         }
     private void loadAlarms() {
         alarmList.clear(); // this uses your class-level variable
         alarmList.addAll(dbHelper.getAllAlarms());
         adapter.notifyDataSetChanged(); // also your class-level adapter
     }
-
 }
 
 

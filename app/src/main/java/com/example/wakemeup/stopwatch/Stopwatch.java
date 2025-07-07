@@ -2,15 +2,22 @@ package com.example.wakemeup.stopwatch;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
 import com.example.wakemeup.R;
 
 import java.util.*;
 
-public class Stopwatch extends AppCompatActivity {
+public class Stopwatch extends Fragment {
 
     private TextView timerTextView;
     private Button startStopButton, lapResetButton;
@@ -21,15 +28,20 @@ public class Stopwatch extends AppCompatActivity {
     private List<String> laps = new ArrayList<>();
     private Runnable updateTimer;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.stopwatch);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.stopwatch, container, false);
+    }
 
-        timerTextView = findViewById(R.id.timer);
-        startStopButton = findViewById(R.id.startStopButton);
-        lapResetButton = findViewById(R.id.lapResetButton);
-        lapList = findViewById(R.id.lapList);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        timerTextView = view.findViewById(R.id.timer);
+        startStopButton = view.findViewById(R.id.startStopButton);
+        lapResetButton = view.findViewById(R.id.lapResetButton);
+        lapList = view.findViewById(R.id.lapList);
 
         updateTimer = new Runnable() {
             @Override
@@ -48,7 +60,7 @@ public class Stopwatch extends AppCompatActivity {
                 handler.removeCallbacks(updateTimer);
                 startStopButton.setText("Start");
                 startStopButton.setBackgroundResource(R.drawable.circle_button_green);
-                startStopButton.setTextColor(ContextCompat.getColor(this, R.color.text_color_on_green_button));
+                startStopButton.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_color_on_green_button));
 
                 lapResetButton.setText("Reset");
                 running = false;
@@ -57,7 +69,7 @@ public class Stopwatch extends AppCompatActivity {
                 handler.post(updateTimer);
                 startStopButton.setText("Stop");
                 startStopButton.setBackgroundResource(R.drawable.circle_button_red);
-                startStopButton.setTextColor(ContextCompat.getColor(this, R.color.text_color_on_red_button));
+                startStopButton.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_color_on_red_button));
                 lapResetButton.setText("Lap");
                 running = true;
             }
@@ -88,7 +100,7 @@ public class Stopwatch extends AppCompatActivity {
         }
 
         SimpleAdapter adapter = new SimpleAdapter(
-                this,
+                requireContext(),
                 data,
                 R.layout.lap_item,
                 new String[]{"lap", "time"},

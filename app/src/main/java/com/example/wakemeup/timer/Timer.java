@@ -1,17 +1,23 @@
-package com.example.wakemeup.timer1;
+package com.example.wakemeup.timer;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import com.example.wakemeup.R;
 
-public class timer extends AppCompatActivity {
+public class Timer extends Fragment {
 
     private NumberPicker pickerHour, pickerMin, pickerSec;
     private TextView timerText;
@@ -20,17 +26,22 @@ public class timer extends AppCompatActivity {
     private boolean isRunning = false;
     private long timeInMillis;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.timer);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.timer, container, false);
+    }
 
-        pickerHour = findViewById(R.id.pickerHour);
-        pickerMin = findViewById(R.id.pickerMin);
-        pickerSec = findViewById(R.id.pickerSec);
-        timerText = findViewById(R.id.timerText);
-        startButton = findViewById(R.id.startButton);
-        resetButton = findViewById(R.id.resetButton);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        pickerHour = view.findViewById(R.id.pickerHour);
+        pickerMin = view.findViewById(R.id.pickerMin);
+        pickerSec = view.findViewById(R.id.pickerSec);
+        timerText = view.findViewById(R.id.timerText);
+        startButton = view.findViewById(R.id.startButton);
+        resetButton = view.findViewById(R.id.resetButton);
 
         // Setup pickers
         pickerHour.setMinValue(0);
@@ -117,7 +128,7 @@ public class timer extends AppCompatActivity {
     }
 
     private void showAlert(String message) {
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(requireContext())
                 .setTitle("Timer")
                 .setMessage(message)
                 .setPositiveButton("OK", null)
