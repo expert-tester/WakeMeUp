@@ -146,6 +146,7 @@ public class MainPageActivity extends AppCompatActivity {
                             recentlyDeletedAlarm.isEnabled(),
                             recentlyDeletedAlarm.getLabel(),
                             recentlyDeletedAlarm.getRepeat(),
+                            recentlyDeletedAlarm.isSnoozeEnabled(),
                             recentlyDeletedAlarm.isGameEnabled()
                     );
 
@@ -179,10 +180,10 @@ public class MainPageActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            loadAlarms(); // reload from DB
+        if (requestCode == REQUEST_CODE_ADD && resultCode == RESULT_OK) {
             Toast.makeText(this, "Alarm added", Toast.LENGTH_SHORT).show();
         }
+        if (data != null && data.hasExtra("alarmData")) {
             int alarmId = data.getIntExtra("alarmData", -1); // Match SetAlarmActivity key
             int hour = data.getIntExtra("hour", -1);
             int minute = data.getIntExtra("minute", -1);
@@ -207,11 +208,9 @@ public class MainPageActivity extends AppCompatActivity {
                     PendingIntent pendingIntent = PendingIntent.getBroadcast(
                             this, alarm.getId(), intent, PendingIntent.FLAG_IMMUTABLE);
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        if (!alarmManager.canScheduleExactAlarms()) {
-                            Toast.makeText(this, "Exact alarm permission not granted", Toast.LENGTH_LONG).show();
-                            return;
-                        }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                        Toast.makeText(this, "Exact alarm permission not granted", Toast.LENGTH_LONG).show();
+                        return;
                     }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -232,29 +231,45 @@ public class MainPageActivity extends AppCompatActivity {
                 }
             }
 
-            // Refresh list
+
+        // Refresh list
+        alarmList.clear();
+        alarmList.addAll(dbHelper.getAllAlarms());
+
+        Collections.sort(alarmList, (a1, a2) -> {
+            int hourCompare = Integer.compare(a1.getHour(), a2.getHour());
+            return (hourCompare != 0) ? hourCompare :
+                    Integer.compare(a1.getMinute(), a2.getMinute());
+        });
+
+        adapter.notifyDataSetChanged();
+        Toast.makeText(this, "Alarm added", Toast.LENGTH_SHORT).show();
+    }
+}
+        private void loadAlarms() {
+            alarmList.clear(); // this uses your class-level variable
+            alarmList.addAll(dbHelper.getAllAlarms());
+            adapter.notifyDataSetChanged(); // also your class-level adapter
+        }
+        @Override
+        protected void onResume() {
+            super.onResume();
+            reloadAlarmList();
+        }
+        private void reloadAlarmList() {
             alarmList.clear();
             alarmList.addAll(dbHelper.getAllAlarms());
-            Collections.sort(alarmList, new Comparator<Alarm>() {
-                @Override
-                public int compare(Alarm a1, Alarm a2) {
-                    int hourCompare = Integer.compare(a1.getHour(), a2.getHour());
-                    if (hourCompare != 0) return hourCompare;
-                    return Integer.compare(a1.getMinute(), a2.getMinute());
-                }
+
+            Collections.sort(alarmList, (a1, a2) -> {
+                int hourCompare = Integer.compare(a1.getHour(), a2.getHour());
+                return (hourCompare != 0) ? hourCompare : Integer.compare(a1.getMinute(), a2.getMinute());
             });
 
             adapter.notifyDataSetChanged();
-
-            Toast.makeText(this, "Alarm added", Toast.LENGTH_SHORT).show();
         }
-    private void loadAlarms() {
-        alarmList.clear(); // this uses your class-level variable
-        alarmList.addAll(dbHelper.getAllAlarms());
-        adapter.notifyDataSetChanged(); // also your class-level adapter
     }
 
-}
+
 
 
 

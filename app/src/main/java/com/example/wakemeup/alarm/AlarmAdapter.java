@@ -1,6 +1,9 @@
 package com.example.wakemeup.alarm;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +31,6 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
         }
     }
 
-
     public AlarmAdapter(Context context, ArrayList<Alarm> alarmList, AlarmDBHelper dbHelper) {
         this.context = context;
         this.alarmList = alarmList;
@@ -51,14 +53,35 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
         String amPm = (hour >= 12) ? "PM" : "AM";
         int displayHour = (hour % 12 == 0) ? 12 : hour % 12;
         String formattedTime = String.format("%02d:%02d %s", displayHour, minute, amPm);
+
         holder.alarmTimeText.setText(currentAlarm.getTime());
         holder.alarmSwitch.setChecked(currentAlarm.isEnabled());
         holder.alarmLabelText.setText(currentAlarm.getLabel());
         holder.alarmSwitch.setOnCheckedChangeListener(null);
-        holder.repeatText.setText(formatRepeatText(currentAlarm.getRepeat()));
+        holder.alarmRepeatText.setText(formatRepeatText(currentAlarm.getRepeat()));
+
+        int textColor = currentAlarm.isEnabled() ? Color.WHITE : Color.GRAY;
+
+        holder.alarmTimeText.setTextColor(textColor);
+        holder.alarmLabelText.setTextColor(textColor);
+        holder.alarmRepeatText.setTextColor(textColor);
+
+
         holder.alarmSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             currentAlarm.setEnabled(isChecked);
             dbHelper.updateToggle(currentAlarm.getId(), isChecked);
+
+            // Update text color when switch is toggled
+            int updatedColor = isChecked ? Color.WHITE : Color.GRAY;
+            holder.alarmTimeText.setTextColor(updatedColor);
+            holder.alarmLabelText.setTextColor(updatedColor);
+            holder.alarmRepeatText.setTextColor(updatedColor);
+        });
+
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, SetAlarmActivity.class);
+            intent.putExtra("alarmId", currentAlarm.getId());  // ✅ pass alarm ID
+            ((Activity) context).startActivityForResult(intent, 1); // or REQUEST_CODE_EDIT if you define it
         });
     }
 
@@ -80,14 +103,14 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
         TextView alarmTimeText;
         TextView alarmLabelText;
         SwitchCompat alarmSwitch;
-        TextView repeatText;
+        TextView alarmRepeatText;
 
         public AlarmViewHolder(@NonNull View itemView) {
             super(itemView);
             alarmTimeText = itemView.findViewById(R.id.alarmTimeText);
             alarmLabelText = itemView.findViewById(R.id.alarmLabelText);
             alarmSwitch = itemView.findViewById(R.id.alarmSwitch);
-            repeatText = itemView.findViewById(R.id.alarmRepeatText);
+            alarmRepeatText = itemView.findViewById(R.id.alarmRepeatText);
         }
 
     }
