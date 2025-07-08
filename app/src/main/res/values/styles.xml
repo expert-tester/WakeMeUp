@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="CustomTimePickerTheme" parent="Theme.MaterialComponents.Light">
+    <style name="CustomTimePickerTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:textColorPrimary">#888888</item> <!-- Grey -->
         <item name="android:typeface">sans</item>
+    </style>
+    <style name="Animation.AppCompat.Dialog.NumberPicker" parent="Theme.AppCompat.Light.NoActionBar" >
+        <item name="android:textColorPrimary">#FFFFFF</item>
     </style>
 </resources>

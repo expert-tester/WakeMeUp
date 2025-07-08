@@ -1,6 +1,7 @@
 package com.example.wakemeup.alarm;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -17,14 +18,18 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.wakemeup.alarm.SetAlarmActivity;
 import com.example.wakemeup.R;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -32,8 +37,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
-public class AlarmFragment extends Fragment{
+public class AlarmFragment extends Fragment {
 
     private static final int REQUEST_CODE_ADD = 1;
     private RecyclerView alarmRecyclerView;
@@ -45,13 +51,19 @@ public class AlarmFragment extends Fragment{
     private Alarm recentlyDeletedAlarm;
     private int recentlyDeletedPosition;
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        dbHelper = new AlarmDBHelper(requireContext());
-        alarmList = new ArrayList<>();
-    }
+    private final ActivityResultLauncher<Intent> setAlarmLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                Log.d("AlarmFragment", "ActivityResult received. ResultCode: " + result.getResultCode());
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        reloadAlarmList();
+                        Toast.makeText(getContext(), "Alarm saved", Toast.LENGTH_SHORT);
+                    }
+                }
+            }
+    );
 
     @Nullable
     @Override
@@ -63,6 +75,7 @@ public class AlarmFragment extends Fragment{
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        dbHelper = new AlarmDBHelper(requireContext());
         alarmRecyclerView = view.findViewById(R.id.alarmRecyclerView);
         addBtn = view.findViewById(R.id.addBtn);
 
@@ -72,13 +85,27 @@ public class AlarmFragment extends Fragment{
         alarmRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         alarmRecyclerView.setAdapter(adapter);
 
+        adapter.setOnItemClickListener(alarm -> {
+            Intent intent = new Intent(getActivity(), SetAlarmActivity.class);
+            intent.putExtra("alarmId", alarm.getId());
+            intent.putExtra("hour", alarm.getHour());
+            intent.putExtra("minute", alarm.getMinute());
+            intent.putExtra("label", alarm.getLabel());
+            intent.putExtra("repeat", alarm.getRepeat());
+            intent.putExtra("snooze", alarm.isSnoozeEnabled());
+            intent.putExtra("game", alarm.isGameEnabled());
+            intent.putExtra("editMode", true); // Flag to tell SetAlarmActivity to edit
+            setAlarmLauncher.launch(intent);
+        });
+
+
         // Attach swipe handler
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeCallback);
         itemTouchHelper.attachToRecyclerView(alarmRecyclerView);
 
         addBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), SetAlarmActivity.class);
-            startActivityForResult(intent, 1);
+            Intent intent = new Intent(getActivity(), SetAlarmActivity.class);
+            setAlarmLauncher.launch(intent);
         });
     }
 
@@ -195,10 +222,10 @@ public class AlarmFragment extends Fragment{
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == requireActivity().RESULT_OK) {
-            loadAlarms(); // reload from DB
+        if (requestCode == REQUEST_CODE_ADD && resultCode == getActivity().RESULT_OK) {
             Toast.makeText(requireContext(), "Alarm added", Toast.LENGTH_SHORT).show();
         }
+        if (data != null && data.hasExtra("alarmData")) {
             int alarmId = data.getIntExtra("alarmData", -1); // Match SetAlarmActivity key
             int hour = data.getIntExtra("hour", -1);
             int minute = data.getIntExtra("minute", -1);
@@ -223,11 +250,9 @@ public class AlarmFragment extends Fragment{
                     PendingIntent pendingIntent = PendingIntent.getBroadcast(
                             requireContext(), alarm.getId(), intent, PendingIntent.FLAG_IMMUTABLE);
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        if (!alarmManager.canScheduleExactAlarms()) {
-                            Toast.makeText(requireContext(), "Exact alarm permission not granted", Toast.LENGTH_LONG).show();
-                            return;
-                        }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                        Toast.makeText(requireContext(), "Exact alarm permission not granted", Toast.LENGTH_LONG).show();
+                        return;
                     }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -248,31 +273,40 @@ public class AlarmFragment extends Fragment{
                 }
             }
 
+
             // Refresh list
             alarmList.clear();
             alarmList.addAll(dbHelper.getAllAlarms());
-            Collections.sort(alarmList, new Comparator<Alarm>() {
-                @Override
-                public int compare(Alarm a1, Alarm a2) {
-                    int hourCompare = Integer.compare(a1.getHour(), a2.getHour());
-                    if (hourCompare != 0) return hourCompare;
-                    return Integer.compare(a1.getMinute(), a2.getMinute());
-                }
+
+            Collections.sort(alarmList, (a1, a2) -> {
+                int hourCompare = Integer.compare(a1.getHour(), a2.getHour());
+                return (hourCompare != 0) ? hourCompare :
+                        Integer.compare(a1.getMinute(), a2.getMinute());
             });
 
             adapter.notifyDataSetChanged();
-
             Toast.makeText(requireContext(), "Alarm added", Toast.LENGTH_SHORT).show();
         }
+    }
     private void loadAlarms() {
         alarmList.clear(); // this uses your class-level variable
         alarmList.addAll(dbHelper.getAllAlarms());
         adapter.notifyDataSetChanged(); // also your class-level adapter
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        reloadAlarmList();
+    }
+    private void reloadAlarmList() {
+        alarmList.clear();
+        alarmList.addAll(dbHelper.getAllAlarms());
+
+        Collections.sort(alarmList, (a1, a2) -> {
+            int hourCompare = Integer.compare(a1.getHour(), a2.getHour());
+            return (hourCompare != 0) ? hourCompare : Integer.compare(a1.getMinute(), a2.getMinute());
+        });
+
+        adapter.notifyDataSetChanged();
+    }
 }
-
-
-
-
-
-

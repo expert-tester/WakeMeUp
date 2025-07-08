@@ -4,9 +4,12 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="24dp"
+    android:background="#000000"
+    android:backgroundTint="@color/black"
     android:gravity="center">
 
     <LinearLayout
+        android:id="@+id/pickerContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -15,20 +18,25 @@
 
         <NumberPicker
             android:id="@+id/pickerHour"
+            android:theme="@style/Animation.AppCompat.Dialog.NumberPicker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp" />
 
         <NumberPicker
             android:id="@+id/pickerMin"
+            android:theme="@style/Animation.AppCompat.Dialog.NumberPicker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp" />
+            android:layout_marginEnd="8dp"
+            android:textColor="#FFFFFF"/>
 
         <NumberPicker
             android:id="@+id/pickerSec"
+            android:theme="@style/Animation.AppCompat.Dialog.NumberPicker"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"/>
     </LinearLayout>
 
     <TextView
@@ -36,6 +44,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="00:00:00"
+        android:textColor="#FFFFFF"
         android:textSize="40sp"
         android:layout_marginBottom="16dp" />
 

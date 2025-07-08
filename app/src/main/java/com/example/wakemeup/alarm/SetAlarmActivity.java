@@ -1,6 +1,7 @@
 package com.example.wakemeup.alarm;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -14,6 +15,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -68,6 +70,7 @@ public class SetAlarmActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("alarmId")) {
             alarmId = intent.getIntExtra("alarmId", -1);
+            Log.d("EditAlarm", "Attempting to edit alarm with ID: " + alarmId); // <-- ADD THIS
             isEditMode = true;
 
             if (alarmId != -1) {
@@ -86,7 +89,7 @@ public class SetAlarmActivity extends AppCompatActivity {
                     gameSwitch.setChecked(existingAlarm.isGameEnabled());
 
 
-                    TextView title = findViewById(R.id.alarmTitleText);
+                    TextView title = alarmTitleText;
                     if (title != null) {
                         title.setText("Edit Alarm");
                     }
@@ -182,8 +185,10 @@ public class SetAlarmActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
                 if (!alarmManager.canScheduleExactAlarms()) {
-                    intent.setData(Uri.parse("package:" + getPackageName()));
-                    startActivity(intent);
+                    Intent permissionIntent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                    permissionIntent.setData(Uri.parse("package:" + getPackageName()));
+                    startActivity(permissionIntent);
+                    Toast.makeText(this, "Please grant permission to set exact alarms", Toast.LENGTH_LONG).show();
                     return;
                 }
             }
@@ -220,12 +225,13 @@ public class SetAlarmActivity extends AppCompatActivity {
 
             if (id != -1) {
                 AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-                intent.putExtra("alarmId", (int) id);
+                Intent alarmIntent = new Intent(this, AlarmReceiver.class);
+                alarmIntent.putExtra("alarmId", (int) id);
 
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(
                         this,
                         (int) id,
-                        intent,
+                        alarmIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
                 );
 

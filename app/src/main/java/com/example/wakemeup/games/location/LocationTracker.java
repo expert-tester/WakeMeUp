@@ -1,4 +1,4 @@
-package com.example.wakemeup.location;
+package com.example.wakemeup.games.location;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -12,11 +12,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 
+import com.example.wakemeup.games.common.BaseGameFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -26,7 +25,7 @@ import com.google.android.gms.location.Priority;
 
 import com.example.wakemeup.R;
 
-public class LocationTracker extends Fragment {
+public class LocationTracker extends BaseGameFragment {
 
     private static final int PERMISSION_REQUEST_CODE = 1001;
     private static final double TARGET_DISTANCE_METERS = 20.0;

@@ -4,8 +4,10 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.icu.util.Calendar;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -17,6 +19,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.wakemeup.R;
+import com.example.wakemeup.games.GameHostActivity;
 
 public class AlarmRingActivity extends Activity {
 
@@ -25,6 +28,17 @@ public class AlarmRingActivity extends Activity {
     private String label;
     private String time;
 
+    private final BroadcastReceiver gamesCompletedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (GameHostActivity.GAMES_COMPLETED.equals(intent.getAction())) {
+                stopRingtone();
+                finish();
+            }
+        }
+    };
+
+    @SuppressLint("NewApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +55,9 @@ public class AlarmRingActivity extends Activity {
 
         labelTextView.setText(label != null ? label : "Alarm");
         timeTextView.setText(time != null ? time : "--:--");
+
+        // Register BroadcastReceiver
+        registerReceiver(gamesCompletedReceiver, new IntentFilter(GameHostActivity.GAMES_COMPLETED), RECEIVER_EXPORTED);
 
         // Play default alarm sound
         try {
@@ -68,10 +85,16 @@ public class AlarmRingActivity extends Activity {
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (ringtone != null && ringtone.isPlaying()) {
-                    ringtone.stop();
+                assert alarm != null;
+                if (alarm.isGameEnabled()) {
+                    Intent gameIntent = new Intent(AlarmRingActivity.this, GameHostActivity.class);
+                    startActivity(gameIntent);
+                }  else {
+                    if (ringtone != null && ringtone.isPlaying()) {
+                        ringtone.stop();
+                    }
+                    finish(); // Close the activity
                 }
-                finish(); // Close the activity
             }
         });
 

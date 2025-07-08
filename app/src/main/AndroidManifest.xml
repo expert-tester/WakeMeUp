@@ -22,12 +22,23 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light">
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".alarm.SetAlarmActivity"
+            android:exported="true" />
+        <activity
+            android:name=".games.GameHostActivity"
+            android:exported="true" />
+        <activity
+            android:name=".alarm.AlarmRingActivity"
+            android:exported="true"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
 
         <receiver
             android:name=".alarm.AlarmReceiver"

@@ -1,5 +1,6 @@
 package com.example.wakemeup.games;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -10,6 +11,8 @@ import com.example.wakemeup.R;
 import com.example.wakemeup.games.common.BaseGameFragment;
 
 public class GameHostActivity extends AppCompatActivity implements BaseGameFragment.GameCompleteListener {
+
+    public static final String GAMES_COMPLETED = "GAMES_COMPLETED";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -31,7 +34,9 @@ public class GameHostActivity extends AppCompatActivity implements BaseGameFragm
     }
 
     private void finishAlarm() {
-        // Stop alarm sound, dismiss activity, etc.
+        // Send message to terminate alarm
+        Intent intent = new Intent("GAMES_COMPLETED");
+        sendBroadcast(intent);
         finish();
     }
 

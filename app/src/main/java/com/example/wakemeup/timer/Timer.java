@@ -1,21 +1,28 @@
 package com.example.wakemeup.timer;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.media.MediaPlayer;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.example.wakemeup.R;
+
+import java.lang.reflect.Field;
 
 public class Timer extends Fragment {
 
@@ -25,6 +32,7 @@ public class Timer extends Fragment {
     private CountDownTimer countDownTimer;
     private boolean isRunning = false;
     private long timeInMillis;
+    private LinearLayout pickerContainer;
 
     @Nullable
     @Override
@@ -36,61 +44,79 @@ public class Timer extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Initialize views
         pickerHour = view.findViewById(R.id.pickerHour);
         pickerMin = view.findViewById(R.id.pickerMin);
         pickerSec = view.findViewById(R.id.pickerSec);
         timerText = view.findViewById(R.id.timerText);
         startButton = view.findViewById(R.id.startButton);
         resetButton = view.findViewById(R.id.resetButton);
+        pickerContainer = view.findViewById(R.id.pickerContainer);
 
-        // Setup pickers
-        pickerHour.setMinValue(0);
-        pickerHour.setMaxValue(23);
+        // Hide timer initially
+        timerText.setVisibility(View.INVISIBLE);
 
-        pickerMin.setMinValue(0);
-        pickerMin.setMaxValue(59);
-
-        pickerSec.setMinValue(0);
-        pickerSec.setMaxValue(59);
+        // Setup number pickers with white text
+        setupNumberPickers();
 
         startButton.setOnClickListener(v -> {
             if (isRunning) {
                 stopTimer();
             } else {
-                int hour = pickerHour.getValue();
-                int min = pickerMin.getValue();
-                int sec = pickerSec.getValue();
-                timeInMillis = (hour * 3600 + min * 60 + sec) * 1000L;
-
-                if (timeInMillis == 0) {
-                    showAlert("Please set a valid time!");
-                    return;
-                }
-
-                startTimer(timeInMillis);
+                startTimer();
             }
         });
 
         resetButton.setOnClickListener(v -> resetTimer());
     }
 
-    private void startTimer(long millis) {
+    private void setupNumberPickers() {
+        // Hour picker
+        pickerHour.setMinValue(0);
+        pickerHour.setMaxValue(23);
+        setNumberPickerTextColor(pickerHour, Color.WHITE);
+
+        // Minute picker
+        pickerMin.setMinValue(0);
+        pickerMin.setMaxValue(59);
+        setNumberPickerTextColor(pickerMin, Color.WHITE);
+
+        // Second picker
+        pickerSec.setMinValue(0);
+        pickerSec.setMaxValue(59);
+        setNumberPickerTextColor(pickerSec, Color.WHITE);
+    }
+
+    private void startTimer() {
+        int hour = pickerHour.getValue();
+        int min = pickerMin.getValue();
+        int sec = pickerSec.getValue();
+        timeInMillis = (hour * 3600 + min * 60 + sec) * 1000L;
+
+        if (timeInMillis <= 0) {
+            showAlert("Please set a valid time!");
+            return;
+        }
+
+        // Show timer and hide pickers
+        timerText.setVisibility(View.VISIBLE);
+        pickerContainer.setVisibility(View.GONE);
         isRunning = true;
-        startButton.setText("Stop");
+        startButton.setText("STOP");
 
-        // Disable pickers while running
-        setPickersEnabled(false);
-
-        countDownTimer = new CountDownTimer(millis, 1000) {
+        countDownTimer = new CountDownTimer(timeInMillis, 1000) {
             public void onTick(long millisUntilFinished) {
                 updateTimerDisplay(millisUntilFinished);
             }
 
             public void onFinish() {
+                timerText.setText("00:00:00");
                 isRunning = false;
-                startButton.setText("Start");
-                updateTimerDisplay(0);
-                setPickersEnabled(true);
+                startButton.setText("START");
+
+                // Play alarm sound
+                MediaPlayer mediaPlayer = MediaPlayer.create(requireContext(), R.raw.alarm);
+                mediaPlayer.start();
                 showAlert("Time is up!");
             }
         }.start();
@@ -101,30 +127,36 @@ public class Timer extends Fragment {
             countDownTimer.cancel();
         }
         isRunning = false;
-        startButton.setText("Start");
-        setPickersEnabled(true);
+        startButton.setText("START");
+        pickerContainer.setVisibility(View.VISIBLE);
+        timerText.setVisibility(View.INVISIBLE);
     }
 
     private void resetTimer() {
         stopTimer();
-        updateTimerDisplay(0);
         pickerHour.setValue(0);
         pickerMin.setValue(0);
         pickerSec.setValue(0);
     }
 
     private void updateTimerDisplay(long millis) {
-        int totalSeconds = (int) (millis / 1000);
-        int h = totalSeconds / 3600;
-        int m = (totalSeconds % 3600) / 60;
-        int s = totalSeconds % 60;
-        timerText.setText(String.format("%02d:%02d:%02d", h, m, s));
+        long totalSeconds = millis / 1000;
+        int hours = (int) (totalSeconds / 3600);
+        int minutes = (int) ((totalSeconds % 3600) / 60);
+        int seconds = (int) (totalSeconds % 60);
+        timerText.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
     }
 
-    private void setPickersEnabled(boolean enabled) {
-        pickerHour.setEnabled(enabled);
-        pickerMin.setEnabled(enabled);
-        pickerSec.setEnabled(enabled);
+    private void setNumberPickerTextColor(NumberPicker numberPicker, int color) {
+        try {
+            @SuppressLint("SoonBlockedPrivateApi") Field selectorWheelPaintField = numberPicker.getClass()
+                    .getDeclaredField("mSelectorWheelPaint");
+            selectorWheelPaintField.setAccessible(true);
+            ((Paint) selectorWheelPaintField.get(numberPicker)).setColor(color);
+            numberPicker.invalidate();
+        } catch (Exception e) {
+            Log.w("NumberPicker", "Could not set text color", e);
+        }
     }
 
     private void showAlert(String message) {
