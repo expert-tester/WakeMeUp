@@ -131,7 +131,7 @@ public class LocationTracker extends AppCompatActivity {
         );
         double distanceSegment = result[0];
 
-//        final double MAX_PLAUSIBLE_SPEED_MPS = 7.0;
+//        final double MAX_PLAUSIBLE_SPEED_MPS = 10.0;
 //        if (distanceSegment > MAX_PLAUSIBLE_SPEED_MPS) {
 //            updateStatusUI("Status: Extreme distance detected... Ignoring");
 //            return;
@@ -170,8 +170,7 @@ public class LocationTracker extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 &&
