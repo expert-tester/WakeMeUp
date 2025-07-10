@@ -25,6 +25,7 @@ public class LocationTracker extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1001;
     private static final double TARGET_DISTANCE_METERS = 20.0;
+    private int rejectionCount = 0;
 
     private TextView tvDistanceMoved, tvStatus, tvTargetDistance;
 
@@ -131,14 +132,21 @@ public class LocationTracker extends AppCompatActivity {
         );
         double distanceSegment = result[0];
 
-//        final double MAX_PLAUSIBLE_SPEED_MPS = 10.0;
-//        if (distanceSegment > MAX_PLAUSIBLE_SPEED_MPS) {
-//            updateStatusUI("Status: Extreme distance detected... Ignoring");
-//            return;
-//        }
 
-        final double STATIONARY_THRESHOLD = 0.5;
-        if (distanceSegment < STATIONARY_THRESHOLD) {
+        if (distanceSegment > 7) {
+            rejectionCount++;
+            if (rejectionCount >= 5){
+                previousLocation = currentLocation;
+                updateStatusUI("Status: Previous location reset... Keep moving");
+                rejectionCount = 0;
+            } else {
+                updateStatusUI("Status: Extreme distance detected... Ignoring");
+            }
+            return;
+        }
+
+
+        if (distanceSegment < 1) {
             updateStatusUI("Status: Tiny movement... Keep moving");
             return;
         }
