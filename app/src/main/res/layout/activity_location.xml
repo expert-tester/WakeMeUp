@@ -13,13 +13,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Target Distance:"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="@color/white"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="100dp"
-        android:layout_marginLeft="70dp"/>
+        app:layout_constraintEnd_toStartOf="@+id/tvTargetDistance"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintHorizontal_bias="0.5"/>
 
     <TextView
         android:id="@+id/tvTargetDistance"
@@ -27,11 +29,12 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="20m"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="@color/white"
+        android:textColor="#FF0000"
         app:layout_constraintBaseline_toBaselineOf="@id/tvTargetDistanceLabel"
-        app:layout_constraintStart_toEndOf="@id/tvTargetDistanceLabel" />
+        app:layout_constraintStart_toEndOf="@id/tvTargetDistanceLabel"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
         android:id="@+id/tvDistanceMovedLabel"
@@ -44,7 +47,9 @@
         android:textColor="@color/white"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTargetDistanceLabel"
-        android:layout_marginLeft="70dp"/>
+        app:layout_constraintEnd_toStartOf="@+id/tvDistanceMoved"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintHorizontal_bias="0.5"/>
 
     <TextView
         android:id="@+id/tvDistanceMoved"
@@ -56,7 +61,8 @@
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintBaseline_toBaselineOf="@id/tvDistanceMovedLabel"
-        app:layout_constraintStart_toEndOf="@id/tvDistanceMovedLabel" />
+        app:layout_constraintStart_toEndOf="@id/tvDistanceMovedLabel"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
         android:id="@+id/tvStatus"
