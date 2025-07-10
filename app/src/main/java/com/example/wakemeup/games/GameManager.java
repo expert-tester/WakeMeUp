@@ -18,10 +18,7 @@ public class GameManager {
 
     private GameManager() {
         gameQueue = new ArrayList<>();
-        gameQueue.add(LocationTracker.class);
-        gameQueue.add(BubblePopperFragment.class);
-        gameQueue.add(MazeFragment.class);
-        gameQueue.add(ShakerFragment.class);
+        setupNewGameSession();
     }
 
     public static GameManager getInstance() {
@@ -33,11 +30,12 @@ public class GameManager {
 
     public void setupNewGameSession() {
         gameQueue.clear(); // Clear any old games from a previous session
+        currentGameIndex = 0;
 
         // Add the minigames for this new session
-        gameQueue.add(BubblePopperFragment.class);
-        gameQueue.add(LocationTracker.class);
-        gameQueue.add(MazeFragment.class);
+//        gameQueue.add(BubblePopperFragment.class);
+//        gameQueue.add(LocationTracker.class);
+//        gameQueue.add(MazeFragment.class);
         gameQueue.add(ShakerFragment.class);
     }
 

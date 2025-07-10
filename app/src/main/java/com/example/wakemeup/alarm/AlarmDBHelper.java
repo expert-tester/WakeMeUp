@@ -19,7 +19,7 @@ import java.util.ArrayList;
 public class AlarmDBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "alarms.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     private static final String TABLE_NAME = "alarms";
     private static final String COLUMN_ID = "id";
@@ -32,6 +32,7 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
     private static final String COLUMN_REPEAT = "repeat_days";
     private static final String COLUMN_SNOOZE = "snooze_enabled";
     private static final String COLUMN_GAME = "game_enabled";
+    private static final String COLUMN_IS_SNOOZING = "is_snoozing";
 
     public AlarmDBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -49,7 +50,8 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
                 COLUMN_SOUND_URI + " TEXT," +
                 COLUMN_REPEAT + " TEXT," +
                 COLUMN_SNOOZE + " INTEGER," +
-                COLUMN_GAME + " INTEGER)";
+                COLUMN_GAME + " INTEGER," +
+                COLUMN_IS_SNOOZING + " INTEGER)";
         db.execSQL(CREATE_TABLE);
     }
 
@@ -73,6 +75,7 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
         values.put(COLUMN_REPEAT, repeat);
         values.put(COLUMN_SNOOZE, snoozeEnabled ? 1 : 0); // Default off
         values.put(COLUMN_GAME, gameEnabled ? 1 : 0);
+        values.put(COLUMN_IS_SNOOZING, 0);
 
         return db.insert(TABLE_NAME, null, values);
     }
@@ -90,6 +93,7 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
         values.put(COLUMN_REPEAT, repeat);
         values.put(COLUMN_SNOOZE, snoozeEnabled);
         values.put(COLUMN_GAME, gameEnabled ? 1 : 0);
+        values.put(COLUMN_IS_SNOOZING, 0);
 
         db.update(TABLE_NAME, values, COLUMN_ID + "=?", new String[]{String.valueOf(id)});
     }
@@ -106,6 +110,13 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_ENABLED, isEnabled ? 1 : 0);
         db.update(TABLE_NAME, values, COLUMN_ID + "=?", new String[]{String.valueOf(id)});
+    }
+
+    public void updateSnoozeState(int alarmId, boolean isSnoozing) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_IS_SNOOZING, isSnoozing ? 1 : 0);
+        db.update(TABLE_NAME, values, COLUMN_ID + "=?", new String[]{String.valueOf(alarmId)});
     }
 
     public void deleteAlarm(int id) {
@@ -153,9 +164,11 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
         String repeat = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_REPEAT));
         boolean gameEnabled = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_GAME)) == 1;
         boolean snoozeEnabled = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SNOOZE)) == 1;
+        boolean isSnoozing = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_SNOOZING)) == 1;
 
         Alarm alarm = new Alarm(id, time, isEnabled, hour, minute, label, soundUri, repeat, gameEnabled);
         alarm.setSnoozeEnabled(snoozeEnabled);
+        alarm.setSnoozing(isSnoozing);
         return alarm;
     }
 }

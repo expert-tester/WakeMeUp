@@ -18,6 +18,7 @@ public class GameHostActivity extends AppCompatActivity implements BaseGameFragm
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_host);
+        GameManager.getInstance().setupNewGameSession();
         loadNextGame();
     }
 

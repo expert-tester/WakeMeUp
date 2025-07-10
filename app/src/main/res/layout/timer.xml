@@ -9,34 +9,77 @@
     android:gravity="center">
 
     <LinearLayout
-        android:id="@+id/pickerContainer"
-        android:layout_width="wrap_content"
+        android:id="@+id/textContainer"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_marginBottom="16dp"
         android:gravity="center"
-        android:layout_marginBottom="16dp">
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hour"
+            android:scaleX="1.5"
+            android:scaleY="1.5"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:layout_marginEnd="32dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Minute"
+            android:scaleX="1.5"
+            android:scaleY="1.5"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:layout_marginEnd="32dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Second"
+            android:scaleX="1.5"
+            android:scaleY="1.5"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/pickerContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:orientation="horizontal">
 
         <NumberPicker
             android:id="@+id/pickerHour"
-            android:theme="@style/Animation.AppCompat.Dialog.NumberPicker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp" />
+            android:scaleX="1.5"
+            android:scaleY="1.5"
+            android:layout_marginEnd="8dp"
+            android:theme="@style/Animation.AppCompat.Dialog.NumberPicker" />
 
         <NumberPicker
             android:id="@+id/pickerMin"
-            android:theme="@style/Animation.AppCompat.Dialog.NumberPicker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:scaleX="1.5"
+            android:scaleY="1.5"
             android:layout_marginEnd="8dp"
-            android:textColor="#FFFFFF"/>
+            android:theme="@style/Animation.AppCompat.Dialog.NumberPicker" />
 
         <NumberPicker
             android:id="@+id/pickerSec"
-            android:theme="@style/Animation.AppCompat.Dialog.NumberPicker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"/>
+            android:scaleX="1.5"
+            android:scaleY="1.5"
+            android:layout_marginEnd="8dp"
+            android:theme="@style/Animation.AppCompat.Dialog.NumberPicker" />
     </LinearLayout>
 
     <TextView
@@ -48,16 +91,33 @@
         android:textSize="40sp"
         android:layout_marginBottom="16dp" />
 
-    <Button
-        android:id="@+id/startButton"
-        android:layout_width="wrap_content"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_height="wrap_content"
-        android:text="Start"
-        android:layout_marginBottom="8dp" />
+        android:layout_width="wrap_content"
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/resetButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Reset" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/resetButton"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:background="@drawable/circle_button_gray"
+            android:backgroundTint="@null"
+            android:textAllCaps="false"
+            android:text="Reset"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/startButton"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/circle_button_green"
+            android:backgroundTint="@null"
+            android:textAllCaps="false"
+            android:text="Start"
+            android:textColor="#5fab72"
+            android:textSize="15sp"
+            android:layout_marginLeft="100dp"/>
+    </LinearLayout>
 </LinearLayout>

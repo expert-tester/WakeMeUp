@@ -43,8 +43,6 @@ public class SetAlarmActivity extends AppCompatActivity {
     private TextView repeatValue, alarmTitleText;
     private String selectedRepeat = "Never";
     private int alarmId = -1;  // -1 means it's a new alarm
-    private boolean isEditMode = false;
-
 
 
 
@@ -70,12 +68,14 @@ public class SetAlarmActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("alarmId")) {
             alarmId = intent.getIntExtra("alarmId", -1);
-            Log.d("EditAlarm", "Attempting to edit alarm with ID: " + alarmId); // <-- ADD THIS
-            isEditMode = true;
+            Log.d("EditAlarm", "Attempting to edit alarm with ID: " + alarmId);
 
             if (alarmId != -1) {
                 Alarm existingAlarm = dbHelper.getAlarmById(alarmId);
                 if (existingAlarm != null) {
+                    Log.d("EditAlarm", "Editing with id " + existingAlarm.getId());
+                    Log.d("EditAlarm", "Editing with all " + existingAlarm);
+                    Log.d("EditAlarm", "Editing with hour " + existingAlarm.getHour());
                     timePicker.setHour(existingAlarm.getHour());
                     timePicker.setMinute(existingAlarm.getMinute());
                     labelInput.setText(existingAlarm.getLabel());

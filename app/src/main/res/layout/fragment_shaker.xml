@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#000000"
+    android:backgroundTint="#000000">
 
     <TextView
         android:id="@+id/textView2"
@@ -11,7 +13,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="72dp"
         android:text="Shake Your Phone!"
-        android:textSize="24sp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="40sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
@@ -23,7 +27,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="Shakes Remaining: 15"
-        android:textSize="16sp"
+        android:textColor="@color/light_gray"
+        android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"

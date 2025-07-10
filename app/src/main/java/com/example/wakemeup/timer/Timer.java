@@ -4,6 +4,9 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -33,6 +36,7 @@ public class Timer extends Fragment {
     private boolean isRunning = false;
     private long timeInMillis;
     private LinearLayout pickerContainer;
+    private Ringtone ringtone;
 
     @Nullable
     @Override
@@ -114,10 +118,21 @@ public class Timer extends Fragment {
                 isRunning = false;
                 startButton.setText("START");
 
-                // Play alarm sound
-                MediaPlayer mediaPlayer = MediaPlayer.create(requireContext(), R.raw.alarm);
-                mediaPlayer.start();
-                showAlert("Time is up!");
+                // Play default alarm sound
+                try {
+                    Uri defaultAlarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+                    if (defaultAlarmUri == null) {
+                        defaultAlarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    }
+                    ringtone = RingtoneManager.getRingtone(requireContext(), defaultAlarmUri);
+                    if (ringtone != null) {
+                        ringtone.play();
+                    } else {
+                        Log.e("AlarmRingActivity", "Failed to get default ringtone");
+                    }
+                } catch (Exception e) {
+                    Log.e("AlarmRingActivity", "Error playing alarm sound: " + e.getMessage(), e);
+                }
             }
         }.start();
     }

@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -83,6 +84,14 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
                 listener.onItemClick(alarmList.get(position));
             }
         });
+
+        LinearLayout snoozeIndicator = holder.itemView.findViewById(R.id.snoozeIndicator);
+
+        if (currentAlarm.isSnoozing()) {
+            snoozeIndicator.setVisibility(View.VISIBLE);
+        } else {
+            snoozeIndicator.setVisibility(View.GONE);
+        }
 
 //        holder.itemView.setOnClickListener(v -> {
 //            Intent intent = new Intent(context, SetAlarmActivity.class);

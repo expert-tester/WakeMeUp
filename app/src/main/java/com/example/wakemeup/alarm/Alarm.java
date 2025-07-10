@@ -11,6 +11,7 @@ public class Alarm {
     private String repeat;
     private boolean snoozeEnabled;
     private boolean gameEnabled;
+    private boolean isSnoozing;
 
 
 
@@ -90,6 +91,9 @@ public class Alarm {
     public boolean isSnoozeEnabled() {
         return snoozeEnabled;
     }
+
+    public boolean isSnoozing() { return isSnoozing; }
+    public void setSnoozing(boolean snoozing) { isSnoozing = snoozing; }
 
     public void setSnoozeEnabled(boolean snoozeEnabled) {
         this.snoozeEnabled = snoozeEnabled;

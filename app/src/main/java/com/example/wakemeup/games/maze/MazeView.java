@@ -38,7 +38,7 @@ public class MazeView extends View {
     private float playerX, playerY, playerRadius;
     private float playerSpeed = 400.0f; // Speed in pixels per second
 
-    private Paint wallPaint, playerPaint, destPaint;
+    private Paint titlePaint, wallPaint, playerPaint, destPaint;
     private float cellSize, hMargin, vMargin;
 
     private Paint joystickBasePaint, joystickKnobPaint;
@@ -52,8 +52,14 @@ public class MazeView extends View {
 
     public MazeView(Context context) {
         super(context);
+        titlePaint = new Paint();
+        titlePaint.setColor(Color.WHITE);
+        titlePaint.setTextSize(80f);
+        titlePaint.setFakeBoldText(true);
+        titlePaint.setAntiAlias(true);
+        titlePaint.setTextAlign(Paint.Align.CENTER);
         wallPaint = new Paint();
-        wallPaint.setColor(Color.parseColor("#374151"));
+        wallPaint.setColor(Color.LTGRAY);
         wallPaint.setStrokeWidth(8);
         playerPaint = new Paint();
         playerPaint.setColor(Color.parseColor("#3B82F6"));
@@ -83,8 +89,8 @@ public class MazeView extends View {
         playerRadius = cellSize * 0.35f;
 
         joystickBaseX = w / 2f;
-        joystickBaseY = h - (vMargin * 1.5f);
-        joystickBaseRadius = vMargin * 0.5f;
+        joystickBaseY = h - (vMargin * 0.6f);
+        joystickBaseRadius = vMargin * 0.3f;
         joystickKnobRadius = joystickBaseRadius / 2f;
         resetJoystick();
 
@@ -224,7 +230,7 @@ public class MazeView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawColor(Color.parseColor("#111827"));
+        canvas.drawColor(Color.parseColor("#000000"));
         canvas.drawRect(destRect, destPaint);
 
         for (int c = 0; c < COLS; c++) {
@@ -241,6 +247,8 @@ public class MazeView extends View {
             }
         }
 
+        String title = "GET OUT OF THE MAZE!";
+        canvas.drawText(title, getWidth() / 2f, 250, titlePaint);
         canvas.drawCircle(playerX, playerY, playerRadius, playerPaint);
         canvas.drawCircle(joystickBaseX, joystickBaseY, joystickBaseRadius, joystickBasePaint);
         canvas.drawCircle(joystickKnobX, joystickKnobY, joystickKnobRadius, joystickKnobPaint);

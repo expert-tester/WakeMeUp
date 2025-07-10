@@ -27,13 +27,14 @@ public class BubblePopperView extends View {
 
         titlePaint = new Paint();
         titlePaint.setColor(Color.WHITE);
-        titlePaint.setTextSize(60f);
+        titlePaint.setTextSize(80f);
+        titlePaint.setFakeBoldText(true);
         titlePaint.setAntiAlias(true);
         titlePaint.setTextAlign(Paint.Align.CENTER);
 
         subtitlePaint = new Paint();
         subtitlePaint.setColor(Color.GRAY);
-        subtitlePaint.setTextSize(40f);
+        subtitlePaint.setTextSize(60f);
         subtitlePaint.setAntiAlias(true);
         subtitlePaint.setTextAlign(Paint.Align.CENTER);
 
@@ -62,7 +63,7 @@ public class BubblePopperView extends View {
 
         for (int i = 0; i < BUBBLE_COUNT; i++) {
             // generate random properties for each bubble
-            int radius = (int) (Math.random() * 50 + 40); // Radius between 40 and 90
+            int radius = (int) (Math.random() * 50 + 60);
             float x = (float) (Math.random() * (width - radius * 2) + radius);
             float y = (float) (Math.random() * (height - radius * 2) + radius);
             int color = Color.rgb((int)(Math.random() * 200 + 55), (int)(Math.random() * 200 + 55), (int)(Math.random() * 200 + 55));
@@ -93,7 +94,7 @@ public class BubblePopperView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawColor(Color.rgb(17, 24, 39));
+        canvas.drawColor(Color.BLACK);
 
         if (!isGameRunning) return;
 
@@ -103,11 +104,10 @@ public class BubblePopperView extends View {
             canvas.drawCircle(bubble.x, bubble.y, bubble.radius, bubblePaint);
         }
 
-        // TODO: add fonts, make nicer interface
         String title = "POP ALL THE BUBBLES!";
         String remainingBubbleText = "Bubbles Remaining: " + bubbles.size();
-        canvas.drawText(title, getWidth() / 2f, 80, titlePaint);
-        canvas.drawText(remainingBubbleText, getWidth() / 2f, 140, subtitlePaint);
+        canvas.drawText(title, getWidth() / 2f, 250, titlePaint);
+        canvas.drawText(remainingBubbleText, getWidth() / 2f, 330, subtitlePaint);
     }
 
     @Override

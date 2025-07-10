@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -57,10 +58,10 @@ public class AlarmFragment extends Fragment {
                 Log.d("AlarmFragment", "ActivityResult received. ResultCode: " + result.getResultCode());
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     Intent data = result.getData();
-                    if (data != null) {
-                        reloadAlarmList();
-                        Toast.makeText(getContext(), "Alarm saved", Toast.LENGTH_SHORT);
-                    }
+                    Log.d("AlarmFragment", "OK" + data.toString());
+
+                    // result handling logic
+                    handleAlarmResult(data);
                 }
             }
     );
@@ -98,7 +99,6 @@ public class AlarmFragment extends Fragment {
             setAlarmLauncher.launch(intent);
         });
 
-
         // Attach swipe handler
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeCallback);
         itemTouchHelper.attachToRecyclerView(alarmRecyclerView);
@@ -107,6 +107,89 @@ public class AlarmFragment extends Fragment {
             Intent intent = new Intent(getActivity(), SetAlarmActivity.class);
             setAlarmLauncher.launch(intent);
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        reloadAlarmList();
+    }
+
+    private void reloadAlarmList() {
+        alarmList.clear();
+        alarmList.addAll(dbHelper.getAllAlarms());
+
+        Collections.sort(alarmList, (a1, a2) -> {
+            int hourCompare = Integer.compare(a1.getHour(), a2.getHour());
+            return (hourCompare != 0) ? hourCompare : Integer.compare(a1.getMinute(), a2.getMinute());
+        });
+
+        adapter.notifyDataSetChanged();
+    }
+
+    @SuppressLint("ScheduleExactAlarm")
+    private void handleAlarmResult(Intent data) {
+        System.out.println("HALLOOO");
+        if (data != null && data.hasExtra("alarmId")) {
+            int alarmId = data.getIntExtra("alarmId", -1);
+
+            if (alarmId != -1) {
+                Alarm alarm = dbHelper.getAlarmById(alarmId);
+                if (alarm != null) {
+                    if (alarm.isEnabled()) {
+                        // Schedule the alarm if it's enabled
+                        Log.d("AlarmFragment", "schedule reached");
+                        System.out.println("HALLOOO");
+                        scheduleExactAlarm(alarm);
+                    } else {
+                        // Cancel the alarm if it's disabled
+                        cancelAlarm(alarm);
+                    }
+                }
+            }
+            // Refresh the list to show the new/updated alarm
+            reloadAlarmList();
+            Toast.makeText(requireContext(), "Alarm saved!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @SuppressLint("ScheduleExactAlarm")
+    private void scheduleExactAlarm(Alarm alarm) {
+        Log.d("AlarmFragment", "Running schedule Exact Alarm");
+        AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(requireContext().ALARM_SERVICE);
+        Intent intent = new Intent(requireContext(), AlarmReceiver.class);
+        intent.putExtra("alarmId", alarm.getId());
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                requireContext(), alarm.getId(), intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, alarm.getHour());
+        calendar.set(Calendar.MINUTE, alarm.getMinute());
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        if (calendar.getTimeInMillis() <= System.currentTimeMillis()) {
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+        }
+
+        Log.d("AlarmFragment", "Scheduled alarm ID: " + alarm.getId() + " for " + alarm.getTime());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+            Toast.makeText(requireContext(), "Permission to schedule exact alarms is required.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+    }
+
+    private void cancelAlarm(Alarm alarm) {
+        AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(requireContext().ALARM_SERVICE);
+        Intent intent = new Intent(requireContext(), AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                requireContext(), alarm.getId(), intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmManager.cancel(pendingIntent);
+        Log.d("AlarmFragment", "Canceled alarm ID: " + alarm.getId());
     }
 
     // Swipe to delete with undo
@@ -213,100 +296,81 @@ public class AlarmFragment extends Fragment {
                         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                                 requireContext(), (int) restoredId, intent, PendingIntent.FLAG_IMMUTABLE);
 
-                        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
                     }
                 }).show();
     }
 
-    @SuppressLint("ScheduleExactAlarm")
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_ADD && resultCode == getActivity().RESULT_OK) {
-            Toast.makeText(requireContext(), "Alarm added", Toast.LENGTH_SHORT).show();
-        }
-        if (data != null && data.hasExtra("alarmData")) {
-            int alarmId = data.getIntExtra("alarmData", -1); // Match SetAlarmActivity key
-            int hour = data.getIntExtra("hour", -1);
-            int minute = data.getIntExtra("minute", -1);
-
-            if (alarmId != -1) {
-                Alarm alarm = dbHelper.getAlarmById(alarmId);
-                if (alarm != null && alarm.isEnabled()) {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.set(Calendar.HOUR_OF_DAY, hour);
-                    calendar.set(Calendar.MINUTE, minute);
-                    calendar.set(Calendar.SECOND, 0);
-                    calendar.set(Calendar.MILLISECOND, 0);
-
-                    if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
-                        calendar.add(Calendar.DAY_OF_YEAR, 1);
-                    }
-
-                    AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(requireContext().ALARM_SERVICE);
-                    Intent intent = new Intent(requireContext(), AlarmReceiver.class);
-                    intent.putExtra("alarmId", alarm.getId());
-
-                    PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                            requireContext(), alarm.getId(), intent, PendingIntent.FLAG_IMMUTABLE);
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-                        Toast.makeText(requireContext(), "Exact alarm permission not granted", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        alarmManager.setExactAndAllowWhileIdle(
-                                AlarmManager.RTC_WAKEUP,
-                                calendar.getTimeInMillis(),
-                                pendingIntent
-                        );
-                    } else {
-                        alarmManager.setExact(
-                                AlarmManager.RTC_WAKEUP,
-                                calendar.getTimeInMillis(),
-                                pendingIntent
-                        );
-                    }
-
-                    Log.d("MainActivity", "Alarm scheduled with ID: " + alarm.getId());
-                }
-            }
-
-
-            // Refresh list
-            alarmList.clear();
-            alarmList.addAll(dbHelper.getAllAlarms());
-
-            Collections.sort(alarmList, (a1, a2) -> {
-                int hourCompare = Integer.compare(a1.getHour(), a2.getHour());
-                return (hourCompare != 0) ? hourCompare :
-                        Integer.compare(a1.getMinute(), a2.getMinute());
-            });
-
-            adapter.notifyDataSetChanged();
-            Toast.makeText(requireContext(), "Alarm added", Toast.LENGTH_SHORT).show();
-        }
-    }
-    private void loadAlarms() {
-        alarmList.clear(); // this uses your class-level variable
-        alarmList.addAll(dbHelper.getAllAlarms());
-        adapter.notifyDataSetChanged(); // also your class-level adapter
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
-        reloadAlarmList();
-    }
-    private void reloadAlarmList() {
-        alarmList.clear();
-        alarmList.addAll(dbHelper.getAllAlarms());
-
-        Collections.sort(alarmList, (a1, a2) -> {
-            int hourCompare = Integer.compare(a1.getHour(), a2.getHour());
-            return (hourCompare != 0) ? hourCompare : Integer.compare(a1.getMinute(), a2.getMinute());
-        });
-
-        adapter.notifyDataSetChanged();
-    }
+//    @SuppressLint("ScheduleExactAlarm")
+//    @Override
+//    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        if (requestCode == REQUEST_CODE_ADD && resultCode == getActivity().RESULT_OK) {
+//            Toast.makeText(requireContext(), "Alarm added", Toast.LENGTH_SHORT).show();
+//        }
+//        if (data != null && data.hasExtra("alarmData")) {
+//            int alarmId = data.getIntExtra("alarmData", -1); // Match SetAlarmActivity key
+//            int hour = data.getIntExtra("hour", -1);
+//            int minute = data.getIntExtra("minute", -1);
+//
+//            if (alarmId != -1) {
+//                Alarm alarm = dbHelper.getAlarmById(alarmId);
+//                if (alarm != null && alarm.isEnabled()) {
+//                    Calendar calendar = Calendar.getInstance();
+//                    calendar.set(Calendar.HOUR_OF_DAY, hour);
+//                    calendar.set(Calendar.MINUTE, minute);
+//                    calendar.set(Calendar.SECOND, 0);
+//                    calendar.set(Calendar.MILLISECOND, 0);
+//
+//                    if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
+//                        calendar.add(Calendar.DAY_OF_YEAR, 1);
+//                    }
+//
+//                    AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(requireContext().ALARM_SERVICE);
+//                    Intent intent = new Intent(requireContext(), AlarmReceiver.class);
+//                    intent.putExtra("alarmId", alarm.getId());
+//
+//                    PendingIntent pendingIntent = PendingIntent.getBroadcast(
+//                            requireContext(), alarm.getId(), intent, PendingIntent.FLAG_IMMUTABLE);
+//
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+//                        Toast.makeText(requireContext(), "Exact alarm permission not granted", Toast.LENGTH_LONG).show();
+//                        return;
+//                    }
+//
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                        alarmManager.setExactAndAllowWhileIdle(
+//                                AlarmManager.RTC_WAKEUP,
+//                                calendar.getTimeInMillis(),
+//                                pendingIntent
+//                        );
+//                    } else {
+//                        alarmManager.setExact(
+//                                AlarmManager.RTC_WAKEUP,
+//                                calendar.getTimeInMillis(),
+//                                pendingIntent
+//                        );
+//                    }
+//
+//                    Log.d("MainActivity", "Alarm scheduled with ID: " + alarm.getId());
+//                    Log.d("MainActivity", "Alarm scheduled with time: " + alarm.getTime());
+//
+//                }
+//            }
+//
+//
+//            // Refresh list
+//            alarmList.clear();
+//            alarmList.addAll(dbHelper.getAllAlarms());
+//
+//            Collections.sort(alarmList, (a1, a2) -> {
+//                int hourCompare = Integer.compare(a1.getHour(), a2.getHour());
+//                return (hourCompare != 0) ? hourCompare :
+//                        Integer.compare(a1.getMinute(), a2.getMinute());
+//            });
+//
+//            adapter.notifyDataSetChanged();
+//            Toast.makeText(requireContext(), "Alarm added", Toast.LENGTH_SHORT).show();
+//        }
+//    }
 }

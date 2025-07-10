@@ -12,14 +12,18 @@ import android.icu.util.Calendar;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.wakemeup.R;
 import com.example.wakemeup.games.GameHostActivity;
+
+import java.util.Objects;
 
 public class AlarmRingActivity extends Activity {
 
@@ -74,6 +78,7 @@ public class AlarmRingActivity extends Activity {
         } catch (Exception e) {
             Log.e("AlarmRingActivity", "Error playing alarm sound: " + e.getMessage(), e);
         }
+
         // Load alarm from database to check if snooze is enabled
         AlarmDBHelper dbHelper = new AlarmDBHelper(this);
         Alarm alarm = dbHelper.getAlarmById(alarmId);
@@ -81,27 +86,36 @@ public class AlarmRingActivity extends Activity {
         if (alarm != null && !alarm.isSnoozeEnabled()) {
             snoozeButton.setVisibility(View.GONE); // Hide snooze button when is disabled
         }
+
         // Stop alarm on button click
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                dbHelper.updateSnoozeState(alarmId, false);
                 assert alarm != null;
                 if (alarm.isGameEnabled()) {
                     Intent gameIntent = new Intent(AlarmRingActivity.this, GameHostActivity.class);
                     startActivity(gameIntent);
                 }  else {
-                    if (ringtone != null && ringtone.isPlaying()) {
-                        ringtone.stop();
-                    }
-                    finish(); // Close the activity
+                    stopRingtone();
+                    finish();
                 }
             }
         });
 
         // Snooze alarm for 5 minutes
         snoozeButton.setOnClickListener(v -> {
-            if (alarm != null && alarm.isSnoozeEnabled()){
-                snoozeAlarm(5); // snooze for 5 minutes
+            dbHelper.updateSnoozeState(alarmId, true);
+            assert alarm != null;
+            Log.d("AlarmRingActivity", String.valueOf(alarm.isGameEnabled()));
+            if (alarm.isGameEnabled()) {
+                snoozeAlarm(1);
+                Log.d("AlarmRingActivity", "gameIntent run");
+                Intent gameIntent = new Intent(AlarmRingActivity.this, GameHostActivity.class);
+                Log.d("AlarmRingActivity", gameIntent.toString());
+                startActivity(gameIntent);
+            } else {
+                snoozeAlarm(1);
                 stopRingtone();
                 finish();
             }
@@ -112,10 +126,10 @@ public class AlarmRingActivity extends Activity {
         Calendar snoozeTime = Calendar.getInstance();
         snoozeTime.add(Calendar.MINUTE, minutes);
 
-        Intent intent = new Intent(this, AlarmReceiver.class);
-        intent.putExtra("alarmId", alarmId);
+        Intent snoozeIntent = new Intent(this, AlarmReceiver.class);
+        snoozeIntent.putExtra("alarmId", alarmId);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                this, alarmId, intent, PendingIntent.FLAG_IMMUTABLE);
+                this, alarmId, snoozeIntent, PendingIntent.FLAG_IMMUTABLE);
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.setExactAndAllowWhileIdle(
@@ -132,12 +146,12 @@ public class AlarmRingActivity extends Activity {
             ringtone.stop();
         }
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (ringtone != null && ringtone.isPlaying()) {
-            ringtone.stop();
-        }
+        unregisterReceiver(gamesCompletedReceiver);
+        stopRingtone();
     }
 }
 
