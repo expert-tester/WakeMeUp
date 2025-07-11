@@ -19,6 +19,8 @@ public class Alarm {
         this.id = id;
         this.time = time;
         this.isEnabled = isEnabled;
+        this.hour = hour;
+        this.minute = minute;
         this.label = label;
         this.soundUri = soundUri;
         this.repeat = repeat;
