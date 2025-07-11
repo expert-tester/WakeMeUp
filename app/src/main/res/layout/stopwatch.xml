@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="80dp"
-        android:text="00:00.00"
+    android:text="00:00.00"
         android:textColor="#FFFFFF"
         android:textSize="66sp"
         android:maxLines="1"
