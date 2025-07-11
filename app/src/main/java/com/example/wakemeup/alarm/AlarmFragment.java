@@ -16,29 +16,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.wakemeup.alarm.SetAlarmActivity;
 import com.example.wakemeup.R;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 public class AlarmFragment extends Fragment {
 
@@ -52,19 +46,22 @@ public class AlarmFragment extends Fragment {
     private Alarm recentlyDeletedAlarm;
     private int recentlyDeletedPosition;
 
-    private final ActivityResultLauncher<Intent> setAlarmLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                Log.d("AlarmFragment", "ActivityResult received. ResultCode: " + result.getResultCode());
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    Intent data = result.getData();
-                    Log.d("AlarmFragment", "OK" + data.toString());
+    private ActivityResultLauncher<Intent> setAlarmLauncher;
 
-                    // result handling logic
-                    handleAlarmResult(data);
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setAlarmLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    Log.d("AlarmFragment", "ActivityResult received. ResultCode: " + result.getResultCode());
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        handleAlarmResult(data);
+                    }
                 }
-            }
-    );
+        );
+    }
 
     @Nullable
     @Override
@@ -119,7 +116,7 @@ public class AlarmFragment extends Fragment {
         alarmList.clear();
         alarmList.addAll(dbHelper.getAllAlarms());
 
-        Collections.sort(alarmList, (a1, a2) -> {
+        alarmList.sort((a1, a2) -> {
             int hourCompare = Integer.compare(a1.getHour(), a2.getHour());
             return (hourCompare != 0) ? hourCompare : Integer.compare(a1.getMinute(), a2.getMinute());
         });
