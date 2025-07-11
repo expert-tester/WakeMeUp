@@ -17,7 +17,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
-import android.media.MediaPlayer;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,12 +28,19 @@ import java.lang.reflect.Field;
 
 public class Timer extends Fragment {
 
+    private enum TimerState {
+        STOPPED,
+        RUNNING,
+        PAUSED
+    }
+
     private NumberPicker pickerHour, pickerMin, pickerSec;
     private TextView timerText;
     private Button startButton, resetButton;
     private CountDownTimer countDownTimer;
-    private boolean isRunning = false;
+    private TimerState currentTimerState = TimerState.STOPPED;
     private long timeInMillis;
+    private long timeLeftInMillis;
     private LinearLayout pickerContainer;
     private Ringtone ringtone;
 
@@ -48,7 +54,6 @@ public class Timer extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Initialize views
         pickerHour = view.findViewById(R.id.pickerHour);
         pickerMin = view.findViewById(R.id.pickerMin);
         pickerSec = view.findViewById(R.id.pickerSec);
@@ -57,35 +62,35 @@ public class Timer extends Fragment {
         resetButton = view.findViewById(R.id.resetButton);
         pickerContainer = view.findViewById(R.id.pickerContainer);
 
-        // Hide timer initially
-        timerText.setVisibility(View.INVISIBLE);
-
-        // Setup number pickers with white text
         setupNumberPickers();
 
         startButton.setOnClickListener(v -> {
-            if (isRunning) {
-                stopTimer();
-            } else {
-                startTimer();
+            switch (currentTimerState) {
+                case STOPPED:
+                    startTimer();
+                    break;
+                case RUNNING:
+                    pauseTimer();
+                    break;
+                case PAUSED:
+                    resumeTimer();
+                    break;
             }
         });
 
         resetButton.setOnClickListener(v -> resetTimer());
+        updateUI();
     }
 
     private void setupNumberPickers() {
-        // Hour picker
         pickerHour.setMinValue(0);
         pickerHour.setMaxValue(23);
         setNumberPickerTextColor(pickerHour, Color.WHITE);
 
-        // Minute picker
         pickerMin.setMinValue(0);
         pickerMin.setMaxValue(59);
         setNumberPickerTextColor(pickerMin, Color.WHITE);
 
-        // Second picker
         pickerSec.setMinValue(0);
         pickerSec.setMaxValue(59);
         setNumberPickerTextColor(pickerSec, Color.WHITE);
@@ -102,56 +107,83 @@ public class Timer extends Fragment {
             return;
         }
 
-        // Show timer and hide pickers
-        timerText.setVisibility(View.VISIBLE);
-        pickerContainer.setVisibility(View.GONE);
-        isRunning = true;
-        startButton.setText("STOP");
+        timeLeftInMillis = timeInMillis;
+        startCountdown(timeLeftInMillis);
+        currentTimerState = TimerState.RUNNING;
+        updateUI();
+    }
 
-        countDownTimer = new CountDownTimer(timeInMillis, 1000) {
+    private void pauseTimer() {
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+        currentTimerState = TimerState.PAUSED;
+        updateUI();
+    }
+
+    private void resumeTimer() {
+        startCountdown(timeLeftInMillis);
+        currentTimerState = TimerState.RUNNING;
+        updateUI();
+    }
+
+    private void resetTimer() {
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+        stopRingtone(); // Stop ringtone if playing
+        currentTimerState = TimerState.STOPPED;
+        pickerHour.setValue(0);
+        pickerMin.setValue(0);
+        pickerSec.setValue(0);
+        updateUI();
+    }
+
+    private void startCountdown(long millis) {
+        countDownTimer = new CountDownTimer(millis, 1000) {
             public void onTick(long millisUntilFinished) {
-                updateTimerDisplay(millisUntilFinished);
+                timeLeftInMillis = millisUntilFinished;
+                updateTimerDisplay(timeLeftInMillis);
             }
 
             public void onFinish() {
-                timerText.setText("00:00:00");
-                isRunning = false;
-                startButton.setText("START");
-
-                // Play default alarm sound
-                try {
-                    Uri defaultAlarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-                    if (defaultAlarmUri == null) {
-                        defaultAlarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                    }
-                    ringtone = RingtoneManager.getRingtone(requireContext(), defaultAlarmUri);
-                    if (ringtone != null) {
-                        ringtone.play();
-                    } else {
-                        Log.e("AlarmRingActivity", "Failed to get default ringtone");
-                    }
-                } catch (Exception e) {
-                    Log.e("AlarmRingActivity", "Error playing alarm sound: " + e.getMessage(), e);
-                }
+                timeLeftInMillis = 0;
+                updateTimerDisplay(0);
+                currentTimerState = TimerState.STOPPED;
+                updateUI();
+                playRingtone();
+                showTimerFinishedDialog();
             }
         }.start();
     }
 
-    private void stopTimer() {
-        if (countDownTimer != null) {
-            countDownTimer.cancel();
+    private void updateUI() {
+        switch (currentTimerState) {
+            case STOPPED:
+                pickerContainer.setVisibility(View.VISIBLE);
+                timerText.setVisibility(View.INVISIBLE);
+                startButton.setText("START");
+                startButton.setBackgroundResource(R.drawable.circle_button_green);
+                startButton.setTextColor(Color.parseColor("#5fab72"));
+                resetButton.setVisibility(View.VISIBLE);
+                break;
+            case RUNNING:
+                pickerContainer.setVisibility(View.GONE);
+                timerText.setVisibility(View.VISIBLE);
+                startButton.setText("STOP");
+                startButton.setBackgroundResource(R.drawable.circle_button_red); // Set to red
+                startButton.setTextColor(Color.parseColor("#F87171")); // Set to light red
+                resetButton.setVisibility(View.VISIBLE);
+                break;
+            case PAUSED:
+                pickerContainer.setVisibility(View.GONE);
+                timerText.setVisibility(View.VISIBLE);
+                startButton.setText("RESUME");
+                startButton.setBackgroundResource(R.drawable.circle_button_green);
+                startButton.setTextColor(Color.parseColor("#5fab72"));
+                resetButton.setVisibility(View.VISIBLE);
+                break;
         }
-        isRunning = false;
-        startButton.setText("START");
-        pickerContainer.setVisibility(View.VISIBLE);
-        timerText.setVisibility(View.INVISIBLE);
-    }
-
-    private void resetTimer() {
-        stopTimer();
-        pickerHour.setValue(0);
-        pickerMin.setValue(0);
-        pickerSec.setValue(0);
     }
 
     private void updateTimerDisplay(long millis) {
@@ -160,6 +192,36 @@ public class Timer extends Fragment {
         int minutes = (int) ((totalSeconds % 3600) / 60);
         int seconds = (int) (totalSeconds % 60);
         timerText.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+    }
+
+    private void playRingtone() {
+        try {
+            Uri defaultAlarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+            if (defaultAlarmUri == null) {
+                defaultAlarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            }
+            ringtone = RingtoneManager.getRingtone(requireContext(), defaultAlarmUri);
+            if (ringtone != null) {
+                ringtone.play();
+            } else {
+                Log.e("TimerFragment", "Failed to get default ringtone");
+            }
+        } catch (Exception e) {
+            Log.e("TimerFragment", "Error playing alarm sound", e);
+        }
+    }
+
+    private void stopRingtone() {
+        if (ringtone != null && ringtone.isPlaying()) {
+            ringtone.stop();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Stop the ringtone if the user leaves the fragment
+        stopRingtone();
     }
 
     private void setNumberPickerTextColor(NumberPicker numberPicker, int color) {
@@ -179,6 +241,17 @@ public class Timer extends Fragment {
                 .setTitle("Timer")
                 .setMessage(message)
                 .setPositiveButton("OK", null)
+                .show();
+    }
+
+    private void showTimerFinishedDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Timer")
+                .setMessage("Timer finished!")
+                .setCancelable(false)
+                .setPositiveButton("OK", (dialog, which) -> {
+                    stopRingtone();
+                })
                 .show();
     }
 }
