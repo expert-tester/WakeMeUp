@@ -30,12 +30,12 @@ public class GameManager {
 
     public void setupNewGameSession() {
         gameQueue.clear(); // Clear any old games from a previous session
-        currentGameIndex = 0;
+        reset();
 
-        // Add the minigames for this new session
-//        gameQueue.add(BubblePopperFragment.class);
-//        gameQueue.add(LocationTracker.class);
-//        gameQueue.add(MazeFragment.class);
+        // Add games
+        gameQueue.add(BubblePopperFragment.class);
+        gameQueue.add(LocationTracker.class);
+        gameQueue.add(MazeFragment.class);
         gameQueue.add(ShakerFragment.class);
     }
 
@@ -48,10 +48,6 @@ public class GameManager {
             }
         }
         return null; // All games done
-    }
-
-    public boolean hasMoreGames() {
-        return currentGameIndex < gameQueue.size();
     }
 
     public void reset() {
