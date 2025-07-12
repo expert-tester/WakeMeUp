@@ -7,7 +7,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.wakemeup.alarm.AlarmFragment;
 import com.example.wakemeup.stopwatch.Stopwatch;
-import com.example.wakemeup.timer.TimerPickerFragment;
+import com.example.wakemeup.timer.Timer;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
         Fragment alarmFragment = new AlarmFragment();
         Fragment stopwatchFragment = new Stopwatch();
-        Fragment timerFragment = new TimerPickerFragment();
+        Fragment timerFragment = new Timer();
 
         setCurrentFragment(alarmFragment);
 
