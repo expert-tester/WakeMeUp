@@ -162,7 +162,7 @@ public class Timer extends Fragment {
             case STOPPED:
                 pickerContainer.setVisibility(View.VISIBLE);
                 timerText.setVisibility(View.INVISIBLE);
-                startButton.setText("START");
+                startButton.setText("Start");
                 startButton.setBackgroundResource(R.drawable.circle_button_green);
                 startButton.setTextColor(Color.parseColor("#5fab72"));
                 resetButton.setVisibility(View.VISIBLE);
@@ -170,7 +170,7 @@ public class Timer extends Fragment {
             case RUNNING:
                 pickerContainer.setVisibility(View.GONE);
                 timerText.setVisibility(View.VISIBLE);
-                startButton.setText("STOP");
+                startButton.setText("Stop");
                 startButton.setBackgroundResource(R.drawable.circle_button_red); // Set to red
                 startButton.setTextColor(Color.parseColor("#F87171")); // Set to light red
                 resetButton.setVisibility(View.VISIBLE);
@@ -178,7 +178,7 @@ public class Timer extends Fragment {
             case PAUSED:
                 pickerContainer.setVisibility(View.GONE);
                 timerText.setVisibility(View.VISIBLE);
-                startButton.setText("RESUME");
+                startButton.setText("Resume");
                 startButton.setBackgroundResource(R.drawable.circle_button_green);
                 startButton.setTextColor(Color.parseColor("#5fab72"));
                 resetButton.setVisibility(View.VISIBLE);
